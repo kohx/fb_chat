@@ -4,11 +4,28 @@ import { Pagenate } from './Pagenate.js'
 export class List extends Parent {
 
     constructor() {
+
+        // parent class
         super();
-        this.database = firebase.firestore()
+
+        this.selector('#add_city_button').addEventListener('click', event => {
+            const addCityForm = this.selector('#add_city_form')
+        })
+    }
+
+    load(){
+        var user = firebase.auth().currentUser;
+        console.log(user);
     }
 
     execute() {
+
+        // this.database.collection("cities").doc().set({
+        //     name: 'okuda',
+        //     userID: 'RBB1dV0NC2TVO3W6D3XgYpF0RyV2'
+        // })
+        //     .then(result => console.log(result))
+        //     .catch(error => console.log(error))
 
         /* 
         コレクションリファレンスの取得
@@ -598,7 +615,7 @@ export class List extends Parent {
         // citiesRef.onSnapshot(docs => {
         //     var source = docs.metadata.hasPendingWrites ? "Local" : "Server";
         //     console.log('Cities ', source);
-            
+
         //     docs.forEach(doc => {
         //         var source = doc.metadata.hasPendingWrites ? "Local" : "Server";
         //         console.log(doc.id, source);
@@ -608,7 +625,7 @@ export class List extends Parent {
         /* 
         コレクションの各ドキュメントの変更タイプ取得
         */
-       
+
         // citiesRef.onSnapshot(docs => {            
         //     docs.docChanges.forEach(change => {
         //         if (change.type === "added") {

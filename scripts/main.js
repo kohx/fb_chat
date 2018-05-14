@@ -38,5 +38,6 @@ function index() {
 }
 
 function list() {
-    new List().execute();
+    new List().load()
+    new List().execute()
 }

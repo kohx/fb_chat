@@ -1,16 +1,13 @@
-import {Parent} from './parent.js';
+import { Parent } from './parent.js';
 
 export class Message extends Parent {
     constructor() {
-        
+
         // parent class
         super();
 
         // message limit
         this.messageLimit = 12
-
-        // A loading image URL.
-        this.loadingImageUrl = "https://www.google.com/images/spin-32.gif"
 
         // Template for messages.
         this.messageTemplate = `<div class="message">
@@ -26,19 +23,13 @@ export class Message extends Parent {
         // Shortcuts to DOM Elements.
         this.messageList = this.selector("#message-list")
         this.messageInput = this.selector("#message-input")
-        this.userName = this.selector("#user-name")
-        this.userPic = this.selector("#user-pic")
-        this.signIn = this.selector("#sign-in")
-        this.signOut = this.selector("#sign-out")
         this.imageButton = this.selector("#image-button")
         this.imageInput = this.selector("#image-input")
         this.imageOutput = this.selector("#image-output")
-        this.snackbar = this.selector("#snackbar")
         this.send = this.selector("#send")
 
-        // User sign in and out
-        this.signIn.addEventListener("click", event => this.userSignIn(event))
-        this.signOut.addEventListener("click", event => this.userSignOut(event))
+        // Initiates Firebase auth and listen to auth state changes.
+        this.auth.onAuthStateChanged(user => this.authChange(user))
 
         // image upload.
         this.imageButton.addEventListener("click", event =>
@@ -66,67 +57,19 @@ export class Message extends Parent {
                 this.saveImageMessage(file)
             })
         })
-
-        // init
-        this.initFirebase()
-    }
-
-    /*
-     * initFirebase
-     */
-
-    // Sets up shortcuts to Firebase features and initiate firebase auth.
-    initFirebase() {
-
-        this.auth = firebase.auth()
-        this.storage = firebase.storage()
-        this.database = firebase.firestore()
-
-        // Initiates Firebase auth and listen to auth state changes.
-        this.auth.onAuthStateChanged(user => this.onAuthStateChanged(user))
     }
 
     // Triggers when the auth state change for instance when the user signs-in or signs-out.
-    onAuthStateChanged(user) {
+    authChange(user) {
         // User is signed in!
         if (user) {
-            // Get profile pic and user's name from the Firebase user object.
-            const profilePicUrl = user.photoURL
-            const userName = user.displayName
-
-            // Set the user's profile pic and name.
-            this.userPic.setAttribute(
-                    "src",
-                    profilePicUrl || "/images/profile_placeholder.png"
-                    )
-            this.userPic.setAttribute("alt", userName || "anonymous")
-            this.userName.textContent = userName
-
-            // Show user's profile and sign-out button.
-            this.userName.style.display = "block"
-            this.userPic.style.display = "block"
-            this.signOut.style.display = "block"
-
-            // Hide sign-in button.
-            this.signIn.style.display = "none"
-
             // We load currently existing chant messages.
             this.loadMessages()
 
             // We save the Firebase Messaging Device token and enable notifications.
             this.saveMessagingDeviceToken()
+        } else {
 
-            this.setSnackbar("sign in!")
-        }
-        // User is signed out!
-        else {
-            // Hide user's profile and sign-out button.
-            this.userName.style.display = "none"
-            this.userPic.style.display = "none"
-            this.signOut.style.display = "none"
-
-            // Show sign-in button.
-            this.signIn.style.display = "block"
         }
     }
 
@@ -137,10 +80,16 @@ export class Message extends Parent {
         this.messageListRef = this.database.collection("messages")
 
         // event listens for upcoming ones.
-        this.messageListRef
-                .orderBy('created', 'asc')
-                .limit(this.messageLimit)
-                .onSnapshot(docs => this.displayMessage(docs))
+        this.messageListRef.orderBy('created', 'asc').limit(this.messageLimit)
+            .onSnapshot(
+                docs => {
+                    this.displayMessage(docs)
+                },
+                error => {
+                    console.log('can not read!');
+                    
+                }
+            )
     }
 
     // Displays a Message in the UI.
@@ -162,7 +111,7 @@ export class Message extends Parent {
 
             // set picture
             message.querySelector(".pic")
-                    .setAttribute("src", val.photoUrl || "/images/profile_placeholder.png")
+                .setAttribute("src", val.photoUrl || "/images/profile_placeholder.png")
 
             // set name
             message.querySelector(".name").textContent = val.name
@@ -222,11 +171,11 @@ export class Message extends Parent {
             imgElement.src = this.loadingImageUrl // Display a loading image first.
 
             this.storage
-                    .refFromURL(imageUri)
-                    .getMetadata()
-                    .then(metadata => {
-                        imgElement.src = metadata.downloadURLs[0]
-                    })
+                .refFromURL(imageUri)
+                .getMetadata()
+                .then(metadata => {
+                    imgElement.src = metadata.downloadURLs[0]
+                })
         } else {
             imgElement.src = imageUri
         }
@@ -235,26 +184,26 @@ export class Message extends Parent {
     // Saves the messaging device token to the datastore.
     saveMessagingDeviceToken() {
         firebase.messaging().getToken()
-                .then(currentToken => {
+            .then(currentToken => {
 
-                    // then there is token
-                    if (currentToken) {
+                // then there is token
+                if (currentToken) {
 
-                        console.log("Got FCM device token:", currentToken)
+                    console.log("Got FCM device token:", currentToken)
 
-                        // Saving the Device Token to the datastore.
-                        this.database.collection("fcmTokens")
-                                .doc(currentToken)
-                                .set({uid: firebase.auth().currentUser.uid})
-                    } else {
-                        // Need to request permissions to show notifications.
-                        this.requestNotificationsPermissions()
-                    }
-                })
-                .catch(error => {
-                    this.setSnackbar("Unable to get messaging token.", 'error')
-                    console.error(error)
-                })
+                    // Saving the Device Token to the datastore.
+                    this.database.collection("fcmTokens")
+                        .doc(currentToken)
+                        .set({ uid: firebase.auth().currentUser.uid })
+                } else {
+                    // Need to request permissions to show notifications.
+                    this.requestNotificationsPermissions()
+                }
+            })
+            .catch(error => {
+                this.setSnackbar("Unable to get messaging token.", 'error')
+                console.error(error)
+            })
     }
 
     // Requests permissions to show notifications.
@@ -263,38 +212,21 @@ export class Message extends Parent {
         console.log("Requesting notifications permission...")
 
         firebase
-                .messaging()
-                .requestPermission()
-                .then(() => {
-                    // Notification permission granted.
-                    this.saveMessagingDeviceToken()
-                })
-                .catch(error => {
-                    this.setSnackbar("Unable to get permission to notify.", "error")
-                    console.error(error)
-                })
+            .messaging()
+            .requestPermission()
+            .then(() => {
+                // Notification permission granted.
+                this.saveMessagingDeviceToken()
+            })
+            .catch(error => {
+                this.setSnackbar("Unable to get permission to notify.", "error")
+                console.error(error)
+            })
     }
 
     /*
      * user sign in out
      */
-
-    // user sign in
-    userSignIn(event) {
-        // Sign in Firebase using popup auth and Google as the identity provider.
-        var provider = new firebase.auth.GoogleAuthProvider()
-        this.auth.signInWithPopup(provider).then(result => {
-            this.setSnackbar("sign in!")
-        })
-    }
-
-    // user sign out
-    userSignOut() {
-        // Sign out of Firebase.
-        this.auth.signOut().then(resutl => {
-            this.setSnackbar("sign out!")
-        })
-    }
 
     // Returns true if user is signed-in. Otherwise false and displays a message.
     checkSignedInWithMessage() {
@@ -334,18 +266,18 @@ export class Message extends Parent {
             }
 
             this.messageListRef.add(data)
-                    .then(docRef => {
-                        element.value = ''
-                        console.log(docRef)
-                        this.setSnackbar("send text message.")
-                    })
-                    .catch(error => {
-                        this.setSnackbar(
-                                "Error writing new message to Firebase Database",
-                                "error"
-                                )
-                        console.error(error)
-                    })
+                .then(docRef => {
+                    element.value = ''
+                    console.log(docRef)
+                    this.setSnackbar("send text message.")
+                })
+                .catch(error => {
+                    this.setSnackbar(
+                        "Error writing new message to Firebase Database",
+                        "error"
+                    )
+                    console.error(error)
+                })
         }
     }
 
@@ -361,12 +293,12 @@ export class Message extends Parent {
             }
 
             this.renderFile(file)
-                    .then(result => {
-                        const img = new Image()
-                        img.src = result
-                        this.imageOutput.appendChild(img)
-                    })
-                    .catch(error => this.setSnackbar(error.message, "error"))
+                .then(result => {
+                    const img = new Image()
+                    img.src = result
+                    this.imageOutput.appendChild(img)
+                })
+                .catch(error => this.setSnackbar(error.message, "error"))
         })
     }
 
@@ -408,57 +340,33 @@ export class Message extends Parent {
             }
 
             this.messageListRef.add(data)
-                    .then(docRef => {
+                .then(docRef => {
 
-                        // Upload the image to Cloud Storage.
-                        var filePath = `${currentUser.uid}/${docRef.id}/${file.name}`
-                        this.storage
-                                .ref(filePath)
-                                .put(file)
-                                .then(snapshot => {
-                                    // Get the file's Storage URI and update the chat message placeholder.
-                                    var fullPath = snapshot.metadata.fullPath
+                    // Upload the image to Cloud Storage.
+                    var filePath = `${currentUser.uid}/${docRef.id}/${file.name}`
+                    this.storage
+                        .ref(filePath)
+                        .put(file)
+                        .then(snapshot => {
+                            // Get the file's Storage URI and update the chat message placeholder.
+                            var fullPath = snapshot.metadata.fullPath
 
-                                    // update database imageurl to strage image url
-                                    docRef.update({
-                                        imageUrl: this.storage.ref(fullPath).toString()
-                                    })
+                            // update database imageurl to strage image url
+                            docRef.update({
+                                imageUrl: this.storage.ref(fullPath).toString()
+                            })
 
-                                    this.imageOutput.innerHTML = ''
-                                    this.files = null
-                                })
-                    })
-                    .catch(error => {
-                        tihs.setSnackbar(
-                                "There was an error uploading a file to Cloud Storage.",
-                                "error"
-                                )
-                        console.error(error)
-                    })
+                            this.imageOutput.innerHTML = ''
+                            this.files = null
+                        })
+                })
+                .catch(error => {
+                    tihs.setSnackbar(
+                        "There was an error uploading a file to Cloud Storage.",
+                        "error"
+                    )
+                    console.error(error)
+                })
         }
-    }
-
-    /* 
-     * snackbar
-     */
-
-    setSnackbar(message, type = "info", sec = 2000) {
-        this.snackbar.classList.add("active")
-        this.snackbar.querySelector(".type").textContent = type
-        this.snackbar.querySelector(".message").textContent = message
-
-        Promise.resolve()
-                .then(resolve => {
-                    return new Promise(resolve => {
-                        setTimeout(() => {
-                            this.snackbar.classList.remove("active")
-                            resolve()
-                        }, sec)
-                    })
-                })
-                .then(() => {
-                    this.snackbar.querySelector(".type").textContent = ""
-                    this.snackbar.querySelector(".message").textContent = ""
-                })
     }
 }
