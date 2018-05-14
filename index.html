@@ -1,0 +1,92 @@
+<!doctype html>
+<!--
+  Copyright 2015 Google Inc. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      https://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License
+-->
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="Learn how to use the Firebase platform on the Web">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Friendly Chat</title>
+
+        <!-- Disable tap highlight on IE -->
+        <meta name="msapplication-tap-highlight" content="no">
+
+        <!-- Web Application Manifest -->
+        <link rel="manifest" href="manifest.json">
+
+        <!-- Add to homescreen for Chrome on Android -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="Friendly Chat">
+        <meta name="theme-color" content="#303F9F">
+
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Friendly Chat">
+        <meta name="apple-mobile-web-app-status-bar-style" content="#303F9F">
+
+        <!-- Tile icon for Win8 -->
+        <meta name="msapplication-TileColor" content="#3372DF">
+        <meta name="msapplication-navbutton-color" content="#303F9F">
+
+        <!-- Material Design Lite -->
+
+        <!-- App Styling -->
+        <link rel="stylesheet" href="styles/main.css">
+    </head>
+
+    <body>
+        <div id="wrapper">
+
+            <!-- Header section containing logo -->
+            <header id="header">
+                <div>Friendly Chat</div>
+                <div id="user-container">
+                    <img id="user-pic" width="20" src="./images/profile_placeholder.png">
+                    <span id="user-name"></span>
+                    <div id="sign-out">Sign-out</div>
+                    <div id="sign-in">Sign-in</div>
+                </div>
+            </header>
+
+            <main id="main">
+                <!-- Messages container -->
+                <div id="messages-container">
+                    <div id="message-list"></div>
+                </div>
+            </main>
+
+            <footer id="footer">
+                <textarea id="message-input"></textarea>
+                <input id="image-input" type="file" multiple accept="image/*,capture=camera">
+                <button type="button" id="image-button">image</button>
+                <output id="image-output"></output>
+                <button type="button" id="send">send</button>
+            </footer>
+
+            <div id="snackbar">
+                <h2 class="type"></h2>
+                <p class="message"></p>
+            </div>
+        </div>
+
+        <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-firestore.js"></script>
+        <script type="module" src="scripts/main.js"></script>
+    </body>
+
+
+
+</html>

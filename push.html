@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TODO supply a title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyC_DO9wHhHtZ0Ei7BtmM7mLcMG-4h0rx-I",
+            authDomain: "freindlychat-16c81.firebaseapp.com",
+            databaseURL: "https://freindlychat-16c81.firebaseio.com",
+            projectId: "freindlychat-16c81",
+            storageBucket: "freindlychat-16c81.appspot.com",
+            messagingSenderId: "743147525524"
+        };
+        firebase.initializeApp(config);
+
+        var key =
+            'AAAArQcLVZQ:APA91bE3M6aQ6whfoc5xUMNStYfATR5lSjBscYY3GI3Okg4u3-Y4Bn0er_Fm9ZEOT7SEpx7_BrbxknkdwqJha8UOSgGQCEXUoZ6UlPEco2QsJTRzW0kf-CC0UUql0mgYD1Q1by0xDg08';
+        var notification = {
+            'title': 'Portugal vs. Denmark',
+            'body': '5 to 1',
+            'icon': 'images/firebase-logo.png',
+            'click_action': 'https://freindlychat-16c81.firebaseapp.com'
+        };
+
+        // Get a reference to the database service
+        var database = firebase.database();
+        var tokenAll = database.ref("/fcmTokens");
+
+        tokenAll.on('value', function (snapshot) {
+            var tos = Object.keys(snapshot.val());
+            console.log(tos);
+            tos.forEach(to => {
+
+                fetch('https://fcm.googleapis.com/fcm/send', {
+                    'method': 'POST',
+                    'headers': {
+                        'Authorization': 'key=' + key,
+                        'Content-Type': 'application/json'
+                    },
+                    'body': JSON.stringify({
+                        'notification': notification,
+                        'to': to
+                    })
+                }).then(function (response) {
+                    console.log(response);
+                }).catch(function (error) {
+                    console.error(error);
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
