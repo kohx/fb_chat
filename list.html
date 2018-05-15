@@ -58,23 +58,44 @@
                 <div id="sign-in">Sign-in</div>
             </div>
         </header>
-        <div id="add_city_form">
-            <input type="text" class="name">
-            <input type="text" class="state">
-            <input type="text" class="country">
-            <input type="text" class="capital">
-            <input type="text" class="population">
-        </div>
-        <button type="button" id="add_city_button">get</button>
+        <main id="main">
 
-        <button type="button" id="get">get</button>
-        <button type="button" id="reset">reser</button>
-        <button type="button" id="set">set</button>
-        <table>
-            <tbody id="list">
+            <div>
+                <label>use userID
+                    <input type="checkbox" id="use_user_id">
+                </label>
+                <select id="citiesData">
+                    <option>---</option>
+                </select>
+                <textarea style="display: block; height: 10rem; width: 20rem;" id="outputData"></textarea>
+                <button type="button" id="create">create</button>
+                <button type="button" id="update">update</button>
+                <button type="button" id="delete">delete</button>
+                <button type="button" id="list">list</button>
+                <button type="button" id="get">get</button>
+            </div>
 
-            </tbody>
-        </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>cityID</th>
+                        <th>name</th>
+                        <th>state</th>
+                        <th>country</th>
+                        <th>capital</th>
+                        <th>population</th>
+                    </tr>
+                </thead>
+                <tbody id="table">
+                    <tr>
+                    </tr>
+                </tbody>
+            </table>
+
+        </main>
+        <footer id="footer">
+
+        </footer>
 
         <div id="snackbar">
             <h2 class="type"></h2>

@@ -38,6 +38,6 @@ function index() {
 }
 
 function list() {
-    new List().load()
+    new List().rules()
     new List().execute()
 }

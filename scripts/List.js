@@ -7,15 +7,146 @@ export class List extends Parent {
 
         // parent class
         super();
+        this.cities = {
+            LA: {
+                name: "Los Angeles",
+                state: "CA",
+                country: "USA",
+                capital: false,
+                population: 3900000,
+            },
+            SF: {
+                name: "San Francisco",
+                state: "CA",
+                country: "USA",
+                capital: false,
+                population: 860000
+            },
+            DC: {
+                name: "Washington, D.C.",
+                state: null,
+                country: "USA",
+                capital: true,
+                population: 680000
+            },
+            TOK: {
+                name: "Tokyo",
+                state: null,
+                country: "Japan",
+                capital: true,
+                population: 9000000
+            },
+            BJ: {
+                name: "Beijing",
+                state: null,
+                country: "China",
+                capital: true,
+                population: 21500000
+            }
+        }
+    }
 
-        this.selector('#add_city_button').addEventListener('click', event => {
-            const addCityForm = this.selector('#add_city_form')
+    rules() {
+        const citiesData = this.selector('#citiesData')
+        const useUserId = this.selector('#use_user_id')
+        const outputData = this.selector('#outputData')
+        Object.keys(this.cities).forEach(value => {
+            citiesData.insertAdjacentHTML('beforeend', `<option value="${value}">${value}</option>`)
+        })
+
+        this.selector('#citiesData').addEventListener('change', event => {
+            const cityeKey = event.target.value
+            let data = Object.assign({}, this.cities[cityeKey]);
+            if (this.isUseUserId()) {
+                data.userID = this.user.uid()
+            }
+            outputData.innerHTML = JSON.stringify(data, null, "    ")
+        })
+
+        this.selector('#use_user_id').addEventListener('click', event => {
+            outputData.value = '{}'
+        })
+
+        const db = this.database
+        var citiesRef = db.collection("cities");
+
+        this.selector('#create').addEventListener('click', event => {
+            const key = 'TOK'
+            this.cities[key].userID = this.useUserId()
+            this.selector('#data').innerHTML = JSON.stringify(this.cities[key], null, '\n')
+            citiesRef.doc(key)
+                .set(this.cities[key])
+                .then(result => console.log(result))
+                .catch(error => console.log(error))
+        })
+
+        this.selector('#update').addEventListener('click', event => {
+            const key = 'TOK'
+            let data = {
+                capital: this.selector('#value').value,
+            }
+            this.selector('#data').innerHTML = JSON.stringify(data, null, '\n')
+            citiesRef.doc(key)
+                .update({
+                    capital: false
+                })
+                .then(result => console.log(result))
+                .catch(error => console.log(error))
+        })
+
+        this.selector('#delete').addEventListener('click', event => {
+            const key = 'TOK'
+            citiesRef.doc(key)
+                .update({
+                    capital: true
+                })
+                .then(result => console.log(result))
+                .catch(error => console.log(error))
+        })
+
+        this.selector('#list').addEventListener('click', event => {
+            citiesRef.get()
+                .then(docs => {
+                    const table = this.selector('#table')
+                    table.textContent = '';
+                    docs.forEach(doc => {
+                        this.createRow(doc)
+                    })
+                })
+                .catch(error => console.log(error))
+        })
+
+        this.selector('#get').addEventListener('click', event => {
+            const key = 'TOK'
+            citiesRef.doc(key)
+                .get()
+                .then(doc => {
+                    const table = this.selector('#table')
+                    table.textContent = '';
+                    this.createRow(doc)
+                })
+                .catch(error => console.log(error))
         })
     }
 
-    load(){
-        var user = firebase.auth().currentUser;
-        console.log(user);
+    isUseUserId() {
+        if (this.useUserId.checked) {
+            return this.user.uid
+        }
+        return null
+    }
+
+    createRow(doc) {
+        const data = doc.data()
+        let row = `<tr>
+        <td>${doc.id}</td>
+        <td>${data.name}</td>
+        <td>${data.state}</td>
+        <td>${data.country}</td>
+        <td>${data.capital}</td>
+        <td>${data.population}</td>
+        </tr>`
+        table.insertAdjacentHTML('beforeend', `<tr>${row}</tr>`)
     }
 
     execute() {

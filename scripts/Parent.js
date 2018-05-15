@@ -36,6 +36,7 @@ export class Parent {
     onAuthStateChanged(user) {
         // User is signed in!
         if (user) {
+            this.user = user
             // Get profile pic and user's name from the Firebase user object.
             const profilePicUrl = user.photoURL
             const userName = user.displayName
