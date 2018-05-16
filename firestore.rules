@@ -1,20 +1,48 @@
-// service cloud.firestore {
-//   match /databases/{database}/documents {
-//     match /{document=**} {
-//       allow read, write: if false;
-//     }
-//   }
-// }
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    match /fcmTokens/{token} {
+    	allow read, write: if request.auth != null;
+    }
+
+  	match /messages/{messageID} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /people/{peopleID} {
+      allow read, write: if request.auth != null;
+    }
+
     match /cities/{cityId} {
-      allow read: if request.auth != null;
-      allow create, update: if 
-        request.auth != null && 
-        request.resource.data.userID == request.auth.uid;
+
+      allow read: if 
+        // ログイン済みならOK
+        request.auth != null
+        ;
+
+      allow create: if 
+        // ログイン済みならOK
+        request.auth != null
+        // 必ず作成者のuserIDをいれる
+        && request.resource.data.userID == request.auth.uid
+        ;
+      
+      allow update: if 
+        request.auth != null
+        // request.resourceは動作実行時の状態なので
+        // updateの場合、更新しないフィールドも含まれる！
+        // よって以下は
+        // uid以外の場合は不可
+        && request.resource.data.userID == request.auth.uid;
+        // 作成者のみOK
+        && request.auth.uid == resource.data.userID;
+
       allow delete: if 
+        // ログイン済みならOK
         request.auth != null &&
-        resource.data.userID == request.auth.uid;
+        // 作成者のみOK
+        request.auth.uid ==  resource.data.userID
+        ;
     }
   }
 }
