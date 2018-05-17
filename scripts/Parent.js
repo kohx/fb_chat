@@ -1,6 +1,11 @@
 export class Parent {
 
     constructor() {
+
+        // declare
+        this.user = null
+
+        // firebase init
         this.initFirebase()
 
         // A loading image URL.

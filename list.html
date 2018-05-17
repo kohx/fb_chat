@@ -65,9 +65,9 @@
                     <input type="checkbox" id="use_user_id">
                 </label>
                 <select id="citiesData">
-                    <option>---</option>
+                    <option value="{}">---</option>
                 </select>
-                <textarea style="display: block; height: 10rem; width: 20rem;" id="outputData"></textarea>
+                <textarea style="display: block; height: 10rem; width: 20rem;" id="outputData">{}</textarea>
                 <button type="button" id="create">create</button>
                 <button type="button" id="update">update</button>
                 <button type="button" id="delete">delete</button>
@@ -84,6 +84,8 @@
                         <th>country</th>
                         <th>capital</th>
                         <th>population</th>
+                        <th>mayor</th>
+                        <th>mayorId</th>
                     </tr>
                 </thead>
                 <tbody id="table">

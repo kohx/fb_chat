@@ -15,33 +15,122 @@ service cloud.firestore {
 
     match /cities/{cityId} {
 
-      allow read: if 
+      // ファンクション
+      function isLoggedIn(){
         // ログイン済みならOK
-        request.auth != null
-        ;
+        return request.auth != null;
+      }
+      function getCity(cityId){
+      	return get(/databases/$(database)/documents/cities/$(cityId));
+      }
 
       allow create: if 
         // ログイン済みならOK
-        request.auth != null
+        // request.auth != null
+        // functionの場合
+        isLoggedIn()
+
         // 必ず作成者のuserIDをいれる
         && request.resource.data.userID == request.auth.uid
+        
+        // キーが'{}'以外
+        && cityId != '{}'
         ;
       
       allow update: if 
-        request.auth != null
+        // ログイン済みならOK
+        // request.auth != null
+        // functionの場合
+        isLoggedIn()
+
         // request.resourceは動作実行時の状態なので
         // updateの場合、更新しないフィールドも含まれる！
         // よって以下は
-        // uid以外の場合は不可
-        && request.resource.data.userID == request.auth.uid;
+        // userIDがuid以外の場合は不可
+        && request.resource.data.userID == request.auth.uid
+
         // 作成者のみOK
-        && request.auth.uid == resource.data.userID;
+        && request.auth.uid == resource.data.userID
+        ;
 
       allow delete: if 
         // ログイン済みならOK
-        request.auth != null &&
+        isLoggedIn()
+
         // 作成者のみOK
-        request.auth.uid ==  resource.data.userID
+        && request.auth.uid == resource.data.userID
+        ;
+
+      // allow read: if 
+      //   // ログイン済みならOK
+      //   // request.auth != null
+      //   // functionの場合
+      //   isLoggedIn()
+      //   ;
+
+      allow list: if
+        isLoggedIn()
+        ;
+
+      allow get: if
+        // ログイン済みならOK
+        isLoggedIn()
+        
+        // データベースの値はパスで取得したほうがいいかも
+        // && resource.data.name == 'San Francisco'
+        // && getCity(cityId).data.name == 'San Francisco'
+        
+        // IS系
+        // && resource.data.name is string
+        // && resource.data.population is int
+        // && resource.data.created is timestamp
+        // && resource.data.state is string
+        // && resource.data.state.size() == 2
+        // && resource.data.country.size() <= 3
+        // mayorRefがリファレンスのときOK
+        // && resource.data.mayorRef is path
+        // mylistがArrayのときOK
+        // && resource.data.mylist is list
+        // mymapがObjectのときOK
+        // && resource.data.mymap is map
+        
+        // objectのなかは「.」でつなげる
+        // && resource.data.mymap.color == 1
+        
+        // すべて持っている場合OK
+        // && resource.data.keys().hasAll(['mayorRef', 'mylist', 'mymap'])
+        // どれか持っている場合OK
+        // && resource.data.keys().hasAny(['mayorRef', 'mylist', 'mymap'])
+        
+        // ロサンゼルスのみOK
+        // && get(/databases/$(database)/documents/cities/$(cityId)).id == 'LA'
+        // ロサンゼルス以外OK
+        // && get(/databases/$(database)/documents/cities/$(cityId)).id != 'LA'
+        
+        // mayorRefがある場合OK
+        // && exists(resource.data.mayorRef)
+        
+        // mayorRefが「Muriel Bowser」のときのみOK
+        //&& resource.data.mayorRef.name == 'Muriel Bowser'
+        
+        // inは配列にあればOK
+        // && resource.data.mayorId in ['wGfKyGYElqcvdYPBUQdT', 'OdUcDXGgmW7RIq70PttQ']
+      	// グループから取得
+        // && resource.data.mayorId in get(/databases/$(database)/documents/groups/CA).data.mayorIds
+        // && resource.data.country in get(/databases/$(database)/documents/groups/ASIA).data.countries
+
+				// 参照先が一致するか判定
+				// __name__pathを返す
+				// && resource.data.mayorRef != null 
+        // && resource.data.mayorRef == get(/databases/$(database)/documents/people/$(resource.data.mayorId)).__name__
+        // mayorRefの実態は？
+        // && resource.data.mayorRef == 'people/AEsEVKVqVrueRbTsuiWO' // not get
+        // && resource.data.mayorRef == '/people/AEsEVKVqVrueRbTsuiWO' // not get
+        // && resource.data.mayorRef == '/databases/freindlychat-16c81/documents/people/AEsEVKVqVrueRbTsuiWO' // not get
+        // && get(resource.data.mayorRef) == get(/databases/$(database)/documents/people/AEsEVKVqVrueRbTsuiWO) // get!!
+        // && get(resource.data.mayorRef).__name__ == get(/databases/$(database)/documents/people/AEsEVKVqVrueRbTsuiWO).__name__ // get!!
+        // && get(resource.data.mayorRef).__name__ == get(/databases/$(database)/documents/people/$(resource.data.mayorId)).__name__ // get!!
+        
         ;
     }
   }

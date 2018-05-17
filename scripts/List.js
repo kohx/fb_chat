@@ -7,6 +7,7 @@ export class List extends Parent {
 
         // parent class
         super();
+        const peopleRef = this.database.collection('people')
         this.cities = {
             LA: {
                 name: "Los Angeles",
@@ -14,96 +15,135 @@ export class List extends Parent {
                 country: "USA",
                 capital: false,
                 population: 3900000,
+                mylist: ['aaa', 'bbb'],
+                mymap: {color: 1},
+                mayor: 'Eric Garcetti',
+                mayorId: 'wGfKyGYElqcvdYPBUQdT',
+                mayorRef: null
             },
             SF: {
                 name: "San Francisco",
                 state: "CA",
                 country: "USA",
                 capital: false,
-                population: 860000
+                population: 860000,
+                mayor: 'Mark Farrell',
+                mayorId: 'wbMlnBKaOJmInTQJFSqx',
             },
             DC: {
                 name: "Washington, D.C.",
                 state: null,
                 country: "USA",
                 capital: true,
-                population: 680000
+                population: 680000,
+                mayor: 'Muriel Bowser',
+                mayorId: 'AEsEVKVqVrueRbTsuiWO'
             },
             TOK: {
                 name: "Tokyo",
                 state: null,
                 country: "Japan",
                 capital: true,
-                population: 9000000
+                population: 9000000,
+                mayor: 'Yuriko Koike',
+                mayorId: 'OdUcDXGgmW7RIq70PttQ'
             },
             BJ: {
                 name: "Beijing",
                 state: null,
                 country: "China",
                 capital: true,
-                population: 21500000
+                population: 21500000,
+                mayor: null,
+                mayorId: null
             }
         }
+
+        // shortcat
+        this.citiesData = this.selector('#citiesData')
+        this.useUserId = this.selector('#use_user_id')
+        this.outputData = this.selector('#outputData')
     }
 
     rules() {
-        const citiesData = this.selector('#citiesData')
-        const useUserId = this.selector('#use_user_id')
-        const outputData = this.selector('#outputData')
+
+        // create select tag
         Object.keys(this.cities).forEach(value => {
-            citiesData.insertAdjacentHTML('beforeend', `<option value="${value}">${value}</option>`)
+            this.citiesData.insertAdjacentHTML('beforeend', `<option value="${value}">${value}</option>`)
         })
 
-        this.selector('#citiesData').addEventListener('change', event => {
+        // change select event
+        this.citiesData.addEventListener('change', event => {
             const cityeKey = event.target.value
             let data = Object.assign({}, this.cities[cityeKey]);
-            if (this.isUseUserId()) {
-                data.userID = this.user.uid()
+            if (this.useUserId.checked) {
+                data.userID = this.user.uid
             }
-            outputData.innerHTML = JSON.stringify(data, null, "    ")
+            this.outputData.value = JSON.stringify(data, null, "    ")
         })
 
+        // change use user id event
         this.selector('#use_user_id').addEventListener('click', event => {
-            outputData.value = '{}'
-        })
-
-        const db = this.database
-        var citiesRef = db.collection("cities");
-
-        this.selector('#create').addEventListener('click', event => {
-            const key = 'TOK'
-            this.cities[key].userID = this.useUserId()
-            this.selector('#data').innerHTML = JSON.stringify(this.cities[key], null, '\n')
-            citiesRef.doc(key)
-                .set(this.cities[key])
-                .then(result => console.log(result))
-                .catch(error => console.log(error))
-        })
-
-        this.selector('#update').addEventListener('click', event => {
-            const key = 'TOK'
-            let data = {
-                capital: this.selector('#value').value,
+            let data = JSON.parse(this.outputData.value)
+            if (event.target.checked) {
+                data.userID = this.user.uid
+            } else {
+                delete data.userID
             }
-            this.selector('#data').innerHTML = JSON.stringify(data, null, '\n')
-            citiesRef.doc(key)
-                .update({
-                    capital: false
-                })
-                .then(result => console.log(result))
-                .catch(error => console.log(error))
+            this.outputData.value = JSON.stringify(data, null, "    ")
         })
 
+        // declare database
+        const db = this.database
+        const citiesRef = db.collection("cities");
+        const peopleRef = db.collection("people");
+
+        /**
+         * create event
+         */
+        this.selector('#create').addEventListener('click', event => {
+            const key = this.citiesData.value
+            let data = JSON.parse(this.outputData.value)
+            if (data.mayorId) {
+                data.mayorRef = peopleRef.doc(data.mayorId)
+            }
+            data.created = firebase.firestore.FieldValue.serverTimestamp()
+            citiesRef.doc(key)
+                .set(data)
+                .then(result => console.log(result))
+                .catch(error => this.setSnackbar(error.message, "error"))
+        })
+
+        /**
+         * update event
+         */
+        this.selector('#update').addEventListener('click', event => {
+            const key = this.citiesData.value
+            let data = JSON.parse(this.outputData.value)
+            if (data.mayorId) {
+                data.mayorRef = peopleRef.doc(data.mayorId)
+            }
+            data.updated = firebase.firestore.FieldValue.serverTimestamp()
+            citiesRef.doc(key)
+                .update(data)
+                .then(result => console.log(result))
+                .catch(error => this.setSnackbar(error.message, "error"))
+        })
+
+        /**
+         * delete event
+         */
         this.selector('#delete').addEventListener('click', event => {
-            const key = 'TOK'
+            const key = this.citiesData.value
             citiesRef.doc(key)
-                .update({
-                    capital: true
-                })
+                .delete()
                 .then(result => console.log(result))
-                .catch(error => console.log(error))
+                .catch(error => this.setSnackbar(error.message, "error"))
         })
 
+        /**
+         * list event
+         */
         this.selector('#list').addEventListener('click', event => {
             citiesRef.get()
                 .then(docs => {
@@ -113,27 +153,35 @@ export class List extends Parent {
                         this.createRow(doc)
                     })
                 })
-                .catch(error => console.log(error))
+                .catch(error => this.setSnackbar(error.message, "error"))
         })
 
+        /**
+         * get event
+         */
         this.selector('#get').addEventListener('click', event => {
-            const key = 'TOK'
+            const key = this.citiesData.value
             citiesRef.doc(key)
                 .get()
                 .then(doc => {
+                    if (!doc.exists) {
+                        this.setSnackbar('not found!', "info")
+                        return
+                    }
                     const table = this.selector('#table')
                     table.textContent = '';
                     this.createRow(doc)
-                })
-                .catch(error => console.log(error))
-        })
-    }
 
-    isUseUserId() {
-        if (this.useUserId.checked) {
-            return this.user.uid
-        }
-        return null
+                    const mayorRef = doc.data().mayorRef
+                    console.log(mayorRef)
+                    if (mayorRef) {
+                        mayorRef.get().then(mayor => {
+                            console.log(mayor.data())
+                        })
+                    }
+                })
+                .catch(error => this.setSnackbar(error.message, "error"))
+        })
     }
 
     createRow(doc) {
@@ -145,6 +193,8 @@ export class List extends Parent {
         <td>${data.country}</td>
         <td>${data.capital}</td>
         <td>${data.population}</td>
+        <td>${data.mayor}</td>
+        <td>${data.mayorId}</td>
         </tr>`
         table.insertAdjacentHTML('beforeend', `<tr>${row}</tr>`)
     }
@@ -795,6 +845,56 @@ export class List extends Parent {
         //     })
         // })
 
+
+        /* 
+        documentリファレンスを保存
+        */
+
+        // citiesRef.doc('LA').update({
+        //     people: this.database.collection('people').doc('T0N4vooiKHA5XdL7RQPM')
+        // })
+        //     .then(result => console.log(result)) // document refalence
+        //     .catch(error => console.log(error))
+
+        /* 
+        documentリファレンスを取得
+        */
+
+        // citiesRef.doc('LA').get()
+        //     .then(doc => {
+        //         const people = doc.data().people
+        //         people.get().then(pl => console.log(pl.data()))
+        //     })
+        //     .catch(error => console.log(error))
+
+
+        /* 
+        コレクションを取得して各ドキュメントのリファレンスを保存
+        */
+        // this.database.collection('people').get()
+        //     .then(docs => {
+        //         let people = []
+        //         docs.forEach(doc => {
+        //             people.push(doc.ref)
+        //         })
+        //         console.log(people)
+        //         citiesRef.doc('LA').update({
+        //             people: people
+        //         })
+        //     })
+        //     .catch(error => console.log(error))
+
+        /* 
+        保存した複数のリファレンスを取得
+        */
+        // citiesRef.doc('LA').get()
+        //     .then(doc => {
+        //         const peopleRefs = doc.data().people
+        //         peopleRefs.forEach(peopleRef => {
+        //             peopleRef.get().then(people => console.log(people.data()))
+        //         });
+        //     })
+        //     .catch(error => console.log(error))
 
     }
 }
