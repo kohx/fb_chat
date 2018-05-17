@@ -1,4 +1,4 @@
-import { Parent } from './parent.js';
+import { Parent } from './Parent.js';
 
 export class Message extends Parent {
     constructor() {
