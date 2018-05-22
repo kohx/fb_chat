@@ -1,8 +1,13 @@
 * {
     box-sizing: border-box;
 }
-body {
+html,body{
     font-size: 62.4%;
+    margin: 0;
+    height: 100vh;
+}
+body {
+
 }
 #wrapper{
     position: relative;
@@ -16,9 +21,7 @@ body {
     top: 0;
     background-color: white;
 }
-#main {
-    padding: 100px 0;
-}
+#main {}
 #footer {
     height: 100px;
     border-top: 2px solid rgb(65, 125, 255);
@@ -37,6 +40,9 @@ body {
 
 #message-list {
     border: 1px solid #ccc;
+    padding: 100px 0;
+    height: 100vh;
+    overflow-x: scroll;
 }
 
 #message-list .message {

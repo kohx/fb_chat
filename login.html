@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sample FirebaseUI App</title>
+    <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script>
+</head>
+
+<body>
+
+    <div id="sign" style="display: none;">sign in!</div>
+    <input id="email" type="email">
+    <input id="password" type="password">
+    <button type="button" id="signup">signup</button>
+    <button type="button" id="signin">signin</button>
+    <button type="button" id="signout">signout</button>
+    <script type="text/javascript">
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyC_DO9wHhHtZ0Ei7BtmM7mLcMG-4h0rx-I",
+            authDomain: "freindlychat-16c81.firebaseapp.com",
+            databaseURL: "https://freindlychat-16c81.firebaseio.com",
+            projectId: "freindlychat-16c81",
+            storageBucket: "freindlychat-16c81.appspot.com",
+            messagingSenderId: "743147525524"
+        };
+        firebase.initializeApp(config)
+
+        const sign = document.querySelector('#sign');
+        const signup = document.querySelector('#signup');
+        const signin = document.querySelector('#signin');
+        const signout = document.querySelector('#signout');
+
+        var user = firebase.auth().currentUser;
+        if (user) {
+           alert('user sign in!')
+        } else {
+            // No user is signed in.
+        }
+
+        // change Auth state
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                sign.style.display = 'block'
+                // location.href = 'index.html'
+            } else {
+                sign.style.display = 'none'
+            }
+        })
+
+        // sign up
+        signup.addEventListener('click', () => {
+            const email = document.querySelector('#email').value
+            const password = document.querySelector('#password').value
+
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(user => {
+                    console.log('signup!', user)
+                }, error => {
+                    // Handle Errors here.
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    console.log(errorCode)
+                    console.log(errorMessage)
+                })
+        })
+
+        // sign in
+        signin.addEventListener('click', () => {
+            alert('in')
+            const email = document.querySelector('#email').value
+            const password = document.querySelector('#password').value
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(user => {
+                    console.log('signin!', user)
+                }, error => {
+                    // Handle Errors here.
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    console.log(errorCode)
+                    console.log(errorMessage)
+                })
+            // var provider = new firebase.auth.GoogleAuthProvider()
+            // tfirebase.auth().signInWithPopup(provider).then(result => {
+            // })
+        })
+
+        // sign out
+        signout.addEventListener('click', () => {
+            firebase.auth().signOut()
+                .then(() => {
+                    console.log('signout!', resutl)
+                }, error => {
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    console.log(errorCode)
+                    console.log(errorMessage)
+                })
+        })
+
+    </script>
+</body>
+
+</html>

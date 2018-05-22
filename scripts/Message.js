@@ -155,6 +155,8 @@ export class Message extends Parent {
                 messageContent.appendChild(image)
             }
 
+            this.messageList.scrollTop = this.messageList.scrollHeight;
+
             // Show the card fading-in.
             setTimeout(() => {
                 message.style.opacity = 1

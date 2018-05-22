@@ -22,6 +22,10 @@ switch (path) {
         index()
         break;
 
+    case '/login.html':
+    alert('in')
+        break;
+
     case '/list.html':
         list();
         break;
@@ -35,6 +39,10 @@ function index() {
     firebase.messaging().onTokenRefresh(() => {
         alert('Token refreshed.')
     })
+}
+
+function login() {
+    const login = new Login()
 }
 
 function list() {

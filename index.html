@@ -13,79 +13,122 @@
 -->
 <html lang="en">
 
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="description" content="Learn how to use the Firebase platform on the Web">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Friendly Chat</title>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Learn how to use the Firebase platform on the Web">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendly Chat</title>
 
-        <!-- Disable tap highlight on IE -->
-        <meta name="msapplication-tap-highlight" content="no">
+    <!-- Disable tap highlight on IE -->
+    <meta name="msapplication-tap-highlight" content="no">
 
-        <!-- Web Application Manifest -->
-        <link rel="manifest" href="manifest.json">
+    <!-- Web Application Manifest -->
+    <link rel="manifest" href="manifest.json">
 
-        <!-- Add to homescreen for Chrome on Android -->
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="application-name" content="Friendly Chat">
-        <meta name="theme-color" content="#303F9F">
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Friendly Chat">
+    <meta name="theme-color" content="#303F9F">
 
-        <!-- Add to homescreen for Safari on iOS -->
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="Friendly Chat">
-        <meta name="apple-mobile-web-app-status-bar-style" content="#303F9F">
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Friendly Chat">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#303F9F">
 
-        <!-- Tile icon for Win8 -->
-        <meta name="msapplication-TileColor" content="#3372DF">
-        <meta name="msapplication-navbutton-color" content="#303F9F">
+    <!-- Tile icon for Win8 -->
+    <meta name="msapplication-TileColor" content="#3372DF">
+    <meta name="msapplication-navbutton-color" content="#303F9F">
 
-        <!-- Material Design Lite -->
+    <!-- Material Design Lite -->
 
-        <!-- App Styling -->
-        <link rel="stylesheet" href="styles/main.css">
-    </head>
+    <!-- App Styling -->
+    <link rel="stylesheet" href="styles/main.css">
+</head>
 
-    <body>
-        <div id="wrapper">
+<body>
+    <div id="wrapper">
 
-            <!-- Header section containing logo -->
-            <header id="header">
-                <div>Friendly Chat</div>
-                <div id="user-container">
-                    <img id="user-pic" width="20" src="./images/profile_placeholder.png">
-                    <span id="user-name"></span>
-                    <div id="sign-out">Sign-out</div>
-                    <div id="sign-in">Sign-in</div>
-                </div>
-            </header>
-
-            <main id="main">
-                <!-- Messages container -->
-                <div id="messages-container">
-                    <div id="message-list"></div>
-                </div>
-            </main>
-
-            <footer id="footer">
-                <textarea id="message-input"></textarea>
-                <input id="image-input" type="file" multiple accept="image/*,capture=camera">
-                <button type="button" id="image-button">image</button>
-                <output id="image-output"></output>
-                <button type="button" id="send">send</button>
-            </footer>
-
-            <div id="snackbar">
-                <h2 class="type"></h2>
-                <p class="message"></p>
+        <!-- Header section containing logo -->
+        <header id="header">
+            <div>Friendly Chat</div>
+            <div id="user-container">
+                <img id="user-pic" width="20" src="./images/profile_placeholder.png">
+                <span id="user-name"></span>
+                <div id="sign-out">Sign-out</div>
+                <div id="sign-in">Sign-in</div>
             </div>
-        </div>
+        </header>
 
-        <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-firestore.js"></script>
-        <script type="module" src="scripts/main.js"></script>
-    </body>
+        <main id="main">
+            <!-- Messages container -->
+            <div id="messages-container">
+                <div id="message-list"></div>
+            </div>
+        </main>
+
+        <footer id="footer">
+            <textarea id="message-input"></textarea>
+            <input id="image-input" type="file" multiple accept="image/*,capture=camera">
+            <button type="button" id="image-button">image</button>
+            <output id="image-output"></output>
+            <button type="button" id="send">send</button>
+        </footer>
+
+        <div id="snackbar">
+            <h2 class="type"></h2>
+            <p class="message"></p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase-firestore.js"></script>
+    <script type="text/javascript">
+        initApp = function() {
+          firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+              // User is signed in.
+              var displayName = user.displayName;
+              var email = user.email;
+              var emailVerified = user.emailVerified;
+              var photoURL = user.photoURL;
+              var uid = user.uid;
+              var phoneNumber = user.phoneNumber;
+              var providerData = user.providerData;
+              user.getIdToken().then(function(accessToken) {
+                document.getElementById('sign-in-status').textContent = 'Signed in';
+                document.getElementById('sign-in').textContent = 'Sign out';
+                document.getElementById('account-details').textContent = JSON.stringify({
+                  displayName: displayName,
+                  email: email,
+                  emailVerified: emailVerified,
+                  phoneNumber: phoneNumber,
+                  photoURL: photoURL,
+                  uid: uid,
+                  accessToken: accessToken,
+                  providerData: providerData
+                }, null, '  ');
+              });
+            } else {
+              // User is signed out.
+              document.getElementById('sign-in-status').textContent = 'Signed out';
+              document.getElementById('sign-in').textContent = 'Sign in';
+              document.getElementById('account-details').textContent = 'null';
+            }
+          }, function(error) {
+            console.log(error);
+          });
+        };
+  
+        window.addEventListener('load', function() {
+          initApp()
+        });
+      </script>
+    </head>
+    
+    <script type="module" src="scripts/main.js"></script>
+</body>
 
 
 
