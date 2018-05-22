@@ -9,12 +9,15 @@
 
 <body>
 
+    <button type="button" id="check_signin">check signin</button>
     <div id="sign" style="display: none;">sign in!</div>
     <input id="email" type="email">
     <input id="password" type="password">
     <button type="button" id="signup">signup</button>
-    <button type="button" id="signin">signin</button>
-    <button type="button" id="signout">signout</button>
+    <button type="button" id="signin" disabled>signin</button>
+    <button type="button" id="signout" disabled>signout</button>
+    <button type="button" id="signup_mail_link" disabled>signup mail link</button>
+
     <script type="text/javascript">
         // Initialize Firebase
         var config = {
@@ -27,29 +30,106 @@
         };
         firebase.initializeApp(config)
 
-        const sign = document.querySelector('#sign');
-        const signup = document.querySelector('#signup');
-        const signin = document.querySelector('#signin');
-        const signout = document.querySelector('#signout');
+        const sign = document.querySelector('#sign')
+        const signup = document.querySelector('#signup')
+        const signin = document.querySelector('#signin')
+        const signout = document.querySelector('#signout')
+        const checkSignin = document.querySelector('#check_signin')
+        const signupMailLink = document.querySelector('#signup_mail_link')
 
-        var user = firebase.auth().currentUser;
-        if (user) {
-           alert('user sign in!')
-        } else {
-            // No user is signed in.
+        /* 
+         * mail signin
+         *-------------------------------------------------------------------
+         */
+        var actionCodeSettings = {
+            // URL you want to redirect back to. The domain (www.example.com) for this
+            // URL must be whitelisted in the Firebase Console.
+            url: 'http://localhost:5000/login.html',
+            // This must be true.
+            handleCodeInApp: true
         }
 
-        // change Auth state
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                sign.style.display = 'block'
-                // location.href = 'index.html'
-            } else {
-                sign.style.display = 'none'
-            }
+        signupMailLink.addEventListener('click', event => {
+            const email = document.querySelector('#email').value
+            const password = document.querySelector('#password').value
+
+            firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
+                .then(() => {
+                    // The link was successfully sent. Inform the user.
+                    // Save the email locally so you don't need to ask the user for it again
+                    // if they open the link on the same device.
+                    window.localStorage.setItem('emailForSignIn', email);
+                    console.log('email for sign in seved.')
+                }, error => {
+                    console.log(error.code)
+                    console.log(error.message)
+                });
         })
 
-        // sign up
+        // Confirm the link is a sign-in with email link.
+        if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
+
+            let emailForSignIn = window.localStorage.getItem('emailForSignIn');
+
+            // if emailForSignIn is not in localstorage, ask email to user
+            if (!emailForSignIn) {
+
+                emailForSignIn = window.prompt('Please provide your email for confirmation');
+            }
+
+            firebase.auth().signInWithEmailLink(emailForSignIn, window.location.href)
+                .then(function (result) {
+                    // Clear email from storage.
+                    window.localStorage.removeItem('emailForSignIn');
+
+                    // result
+                    console.log(result)
+                    console.log(result.additionalUserInfo)
+                    console.log(result.additionalUserInfo.isNewUser)
+                }, error => {
+                    console.log(error.code)
+                    console.log(error.message)
+                });
+        }
+
+        // chack signin type
+        email.addEventListener('keyup', event => {
+            firebase.auth().fetchSignInMethodsForEmail(event.target.value)
+                .then(signInMethods => {
+                    const signinPasswordType = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
+                    const hasPssword = signInMethods.indexOf(signinPasswordType) != -1
+                    const signinMailLinkType = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
+                    const hasMailLink = signInMethods.indexOf(signinMailLinkType) != -1
+                    // type password
+                    if (hasPssword) {
+                        signin.disabled = false
+                        signup.disabled = true
+                    } else {
+                        signin.disabled = true
+                    }
+                    // type mail link
+                    if (hasMailLink) {
+                        signupMailLink.disabled = false
+                        signup.disabled = true
+                    } else {
+                        signupMailLink.disabled = true
+                    }
+
+                    if(!hasPssword && !hasMailLink){
+                        signup.disabled = false
+                    }
+                }, error => {
+                    console.log(error)
+                    signup.disabled = false
+                    signupMailLink.disabled = true
+                    signin.disabled = true
+                })
+        })
+
+        /* 
+         * sign up
+         *-------------------------------------------------------------------
+         */
         signup.addEventListener('click', () => {
             const email = document.querySelector('#email').value
             const password = document.querySelector('#password').value
@@ -58,17 +138,16 @@
                 .then(user => {
                     console.log('signup!', user)
                 }, error => {
-                    // Handle Errors here.
-                    var errorCode = error.code;
-                    var errorMessage = error.message;
-                    console.log(errorCode)
-                    console.log(errorMessage)
+                    console.log(error.code)
+                    console.log(error.message)
                 })
         })
 
-        // sign in
+        /* 
+         * sign in
+         *-------------------------------------------------------------------
+         */
         signin.addEventListener('click', () => {
-            alert('in')
             const email = document.querySelector('#email').value
             const password = document.querySelector('#password').value
 
@@ -76,30 +155,55 @@
                 .then(user => {
                     console.log('signin!', user)
                 }, error => {
-                    // Handle Errors here.
-                    var errorCode = error.code;
-                    var errorMessage = error.message;
-                    console.log(errorCode)
-                    console.log(errorMessage)
+                    console.log(error.code)
+                    console.log(error.message)
                 })
             // var provider = new firebase.auth.GoogleAuthProvider()
             // tfirebase.auth().signInWithPopup(provider).then(result => {
             // })
         })
 
-        // sign out
+        /* 
+         * sign out
+         *-------------------------------------------------------------------
+         */
         signout.addEventListener('click', () => {
             firebase.auth().signOut()
                 .then(() => {
-                    console.log('signout!', resutl)
+                    console.log('signout!')
                 }, error => {
-                    var errorCode = error.code;
-                    var errorMessage = error.message;
-                    console.log(errorCode)
-                    console.log(errorMessage)
+                    console.log(error.code)
+                    console.log(error.message)
                 })
         })
 
+        /* 
+         * check sign in
+         *-------------------------------------------------------------------
+         */
+        checkSignin.addEventListener('click', event => {
+            var user = firebase.auth().currentUser;
+            if (user) {
+                alert('user sign in!')
+            } else {
+                alert('user not sign in!')
+            }
+        })
+
+        /* 
+         * change Auth state
+         *-------------------------------------------------------------------
+         */
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                sign.style.display = 'block'
+                signout.disabled = false
+                // location.href = 'index.html'
+            } else {
+                sign.style.display = 'none'
+                signout.disabled = true
+            }
+        })
     </script>
 </body>
 
