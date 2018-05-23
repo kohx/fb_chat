@@ -17,7 +17,17 @@
     <button type="button" id="signin" disabled>signin</button>
     <button type="button" id="signout" disabled>signout</button>
     <button type="button" id="signup_mail_link" disabled>signup mail link</button>
-
+    <div>
+        <button type="button" class="signin_provider" data-provider="google" data-action="popup">google popup</button>
+        <br>
+        <button type="button" class="signin_provider" data-provider="google" data-action="redirect">google redirect</button>
+        <br>
+        <button type="button" class="signin_provider" data-provider="facebook" data-action="popup">facebook popup</button>
+        <br>
+        <button type="button" class="signin_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
+        <br>
+        <button type="button" class="test">test</button>
+    </div>
     <script type="text/javascript">
         // Initialize Firebase
         var config = {
@@ -36,6 +46,21 @@
         const signout = document.querySelector('#signout')
         const checkSignin = document.querySelector('#check_signin')
         const signupMailLink = document.querySelector('#signup_mail_link')
+        const signinProviders = document.querySelectorAll('.signin_provider')
+        const test = document.querySelector('#test')
+
+        firebase.auth().languageCode = 'ja'
+        // firebase.auth().useDeviceLanguage()
+
+        test.addEventListener('', event => {
+            alert('in')
+            const email = document.querySelector('#email').value
+            const password = document.querySelector('#password').value
+
+            const credential = firebase.auth.EmailAuthProvider.credential(email, password);
+            console.log(credential)
+        })
+
 
         /* 
          * mail signin
@@ -115,7 +140,7 @@
                         signupMailLink.disabled = true
                     }
 
-                    if(!hasPssword && !hasMailLink){
+                    if (!hasPssword && !hasMailLink) {
                         signup.disabled = false
                     }
                 }, error => {
@@ -158,10 +183,87 @@
                     console.log(error.code)
                     console.log(error.message)
                 })
-            // var provider = new firebase.auth.GoogleAuthProvider()
-            // tfirebase.auth().signInWithPopup(provider).then(result => {
-            // })
         })
+
+        /* 
+         * signin with provider
+         *-------------------------------------------------------------------
+         */
+        signinProviders.forEach(signinProvider => {
+            signinProvider.addEventListener('click', event => {
+                const target = event.target.dataset
+                let provider = null
+                switch (target.provider) {
+                    case 'google':
+                        provider = new firebase.auth.GoogleAuthProvider()
+                        // OAuth リクエストと一緒に送信したい追加のカスタム OAuth プロバイダ パラメータを指定します。
+                        provider.setCustomParameters({
+                            'login_hint': 'user@example.com'
+                        })
+                        break;
+
+                    case 'facebook':
+                        provider = new firebase.auth.FacebookAuthProvider();
+                        // OAuth リクエストと一緒に送信したい追加のカスタム OAuth プロバイダ パラメータを指定します。
+                        provider.setCustomParameters({
+                            'display': 'popup'
+                        });
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (target.action == 'popup') {
+                    firebase.auth().signInWithPopup(provider)
+                        .then(result => {
+                            // This gives you a Google Access Token. You can use it to access the Google API.
+                            var token = result.credential.accessToken;
+                            // The signed-in user info.
+                            var user = result.user;
+                            console.log(token)
+                            console.log(user)
+                            console.log('signin!', user)
+                        }, error => {
+                            // Handle Errors here.
+                            console.log(error.code)
+                            console.log(error.message)
+                            // The email of the user's account used.
+                            console.log(error.email)
+                            // The firebase.auth.AuthCredential type that was used.
+                            console.log(error.credential)
+                        })
+                }
+
+                if (target.action == 'redirect') {
+                    firebase.auth().signInWithRedirect(provider)
+                }
+            })
+        })
+
+        /* 
+         * redirect receive
+         */
+        firebase.auth().getRedirectResult()
+            .then(result => {
+                console.log(result)
+                if (result.credential) {
+                    // This gives you a Google Access Token. You can use it to access the Google API.
+                    var token = result.credential.accessToken;
+                    console.log(token)
+                }
+                // The signed-in user info.
+                var user = result.user;
+                console.log(user)
+            }).catch(function (error) {
+                // Handle Errors here.
+                console.log(error.code)
+                console.log(error.message)
+                // The email of the user's account used.
+                console.log(error.email)
+                // The firebase.auth.AuthCredential type that was used.
+                console.log(error.credential)
+            });
 
         /* 
          * sign out
