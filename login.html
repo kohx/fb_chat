@@ -16,27 +16,46 @@
     <button type="button" id="signin" disabled>signin</button>
     <button type="button" id="signout" disabled>signout</button>
     <button type="button" id="signup_mail_link" disabled>signup mail link</button>
-    
-    <div style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
-        <button type="button" id="signinGooglePopup" class="signin_provider" data-provider="google" data-action="popup">google popup</button>
-        <br>
-        <button type="button" id="signinGoogleRedirect" class="signin_provider" data-provider="google" data-action="redirect">google redirect</button>
-        <br>
-        <button type="button" class="signin_provider" data-provider="facebook" data-action="popup">facebook popup</button>
-        <br>
-        <button type="button" class="signin_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
-        <br>
+
+    <div id="signin_box" style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
+        <div id="signin_google">
+            <button type="button" class="signin_provider" data-provider="google" data-action="popup">google popup</button>
+            <button type="button" class="signin_provider" data-provider="google" data-action="redirect">google redirect</button>
+        </div>
+        <div id="signin_facebook">
+            <button type="button" class="signin_provider" data-provider="facebook" data-action="popup">facebook popup</button>
+            <button type="button" class="signin_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
+        </div>
+        <div id="signin_github">
+            <button type="button" class="signin_provider" data-provider="github" data-action="popup">github popup</button>
+            <button type="button" class="signin_provider" data-provider="github" data-action="redirect">github redirect</button>
+        </div>
+        <div id="signin_twitter">
+            <button type="button" class="signin_provider" data-provider="twitter" data-action="popup">twitter popup</button>
+            <button type="button" class="signin_provider" data-provider="twitter" data-action="redirect">twitter redirect</button>
+        </div>
     </div>
-    <div style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
-        <button type="button" class="add_provider" data-provider="google" data-action="popup">google popup</button>
-        <br>
-        <button type="button" class="add_provider" data-provider="google" data-action="redirect">google redirect</button>
-        <br>
-        <button type="button" class="add_provider" data-provider="facebook" data-action="popup">facebook popup</button>
-        <br>
-        <button type="button" class="add_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
-        <br>
+
+    <div id="add_box" style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
+        <div id="add_google">
+            <button type="button" class="add_provider" data-provider="google" data-action="popup">google popup</button>
+            <button type="button" class="add_provider" data-provider="google" data-action="redirect">google redirect</button>
+        </div>
+        <div id="add_facebook">
+            <button type="button" class="add_provider" data-provider="facebook" data-action="popup">facebook popup</button>
+            <button type="button" class="add_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
+        </div>
+        <div id="add_github">
+            <button type="button" class="add_provider" data-provider="github" data-action="popup">github popup</button>
+            <button type="button" class="add_provider" data-provider="github" data-action="redirect">github redirect</button>
+        </div>
+        <div id="add_twitter">
+            <button type="button" class="add_provider" data-provider="twitter" data-action="popup">twitter popup</button>
+            <button type="button" class="add_provider" data-provider="twitter" data-action="redirect">twitter redirect</button>
+            <br>
+        </div>
     </div>
+
     <button type="button" id="test">test</button>
 
     <script type="text/javascript">
@@ -55,37 +74,80 @@
         const signup = document.querySelector('#signup')
         const signin = document.querySelector('#signin')
         const signout = document.querySelector('#signout')
+
         const checkSignin = document.querySelector('#check_signin')
         const signupMailLink = document.querySelector('#signup_mail_link')
+
+        const signinBox = document.querySelector('#signin_box')
         const signinProviders = document.querySelectorAll('.signin_provider')
+
+        const addBox = document.querySelector('#add_box')
         const addProviders = document.querySelectorAll('.add_provider')
+
         const test = document.querySelector('#test')
 
         firebase.auth().languageCode = 'ja'
         // firebase.auth().useDeviceLanguage()
 
-        addProviders.forEach(addProvider => {
-            addProvider.addEventListener('click', event => {
-                const currentUser = firebase.auth().currentUser;
-                console.log(currentUser)
-
-
-                var provider = new firebase.auth.FacebookAuthProvider();
-
-                currentUser.linkWithPopup(provider)
-                    .then(function (result) {
-                        // Accounts successfully linked.
-                        var credential = result.credential;
-                        var user = result.user;
-                        alert("Facebookアカウントのリンクに成功しました。Facebookアカウントでログインできるようになりました")
-                        // ...
-                    }).catch(function (error) {
-                        // Handle Errors here.
-                        alert("Facebookアカウントのリンク中にエラーが発生しました")
-                    });
-            })
+        test.addEventListener('click', event => {
+            alert('test!')
         })
 
+
+        /* 
+         * 
+         *-------------------------------------------------------------------
+         */
+        all('.add_provider').forEach(addProvider => {
+            addProvider.addEventListener('click', event => {
+                const currentUser = firebase.auth().currentUser
+                const target = event.target.dataset
+                let provider = null
+                switch (target.provider) {
+                    case 'google':
+                        provider = new firebase.auth.GoogleAuthProvider()
+                        break;
+
+                    case 'facebook':
+                        provider = new firebase.auth.FacebookAuthProvider();
+                        break;
+
+                    case 'github':
+                        provider = new firebase.auth.GithubAuthProvider();
+                        break;
+
+                    case 'twitter':
+                        provider = new firebase.auth.TwitterAuthProvider();
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (target.action == 'popup') {
+                    currentUser.linkWithPopup(provider)
+                        .then(result => {
+                            notice(sign, 'info', "Facebookアカウントのリンクに成功しました。Facebookアカウントでログインできるようになりました")
+                            var token = result.credential.accessToken;
+                            var user = result.user;
+                            var credential = result.credential;
+                            console.log(token)
+                            console.log(user)
+                            console.log(credential)
+
+                            changeUi(user)
+                        }, error => {
+                            notice(sign, error.code, error.message)
+                            console.log(error.email)
+                            console.log(error.credential)
+                        })
+                }
+
+                if (target.action == 'redirect') {
+                    firebase.auth().linkWithRedirect(provider)
+                }
+            })
+        })
 
         /* 
          * sign up
@@ -208,6 +270,22 @@
                         });
                         break;
 
+                    case 'github':
+                        provider = new firebase.auth.GithubAuthProvider();
+                        // OAuth リクエストと一緒に送信したい追加のカスタム OAuth プロバイダ パラメータを指定します。
+                        provider.setCustomParameters({
+                            'allow_signup': 'false'
+                        })
+                        break;
+
+                    case 'twitter':
+                        provider = new firebase.auth.TwitterAuthProvider();
+                        // OAuth リクエストと一緒に送信したい追加のカスタム OAuth プロバイダ パラメータを指定します。
+                        provider.setCustomParameters({
+                            'lang': 'ja'
+                        });
+                        break;
+
                     default:
                         break;
                 }
@@ -325,20 +403,90 @@
          *-------------------------------------------------------------------
          */
         firebase.auth().onAuthStateChanged(user => {
+            changeUi(user)
+
             if (user) {
+                // show notice
                 notice(sign, 'info', 'signin!')
+                // show signout button
+                changeUi
+
                 // location.href = 'index.html'
             } else {
                 notice(sign, 'info', 'not signin!')
             }
         })
 
+        function changeUi(user) {
+            if (user) {
+                // show signout button
+                signout.disabled = false
+                // hide signin with provider
+                all('.signin_provider').forEach(elment => {
+                    elment.disabled = true
+                })
+                // hide provider add
+                const methods = getSigninMethodsFromCurrentUser(user)
+                all('#add_google .add_provider').forEach(elment => {
+                    elment.disabled = methods.hasGoogle
+                })
+                all('#add_facebook .add_provider').forEach(elment => {
+                    elment.disabled = methods.hasFacebook
+                })
+                all('#add_github .add_provider').forEach(elment => {
+                    elment.disabled = methods.hasGithub
+                })
+                all('#add_twitter .add_provider').forEach(elment => {
+                    elment.disabled = methods.hasTwitter
+                })
+
+                // location.href = 'index.html'
+            } else {
+                signout.disabled = true
+                all('.signin_provider').forEach(elment => {
+                    elment.disabled = false
+                })
+
+                all('.add_provider').forEach(elment => {
+                    elment.disabled = true
+                })
+            }
+        }
+
         /* 
-         * chack signin method
+         * chack signin method from current user
          *-------------------------------------------------------------------
          */
-        function getSigninMethodsFromCurrentUser(currentUser) {
+        function getSigninMethodsFromCurrentUser(currentUser = null) {
+            if (!currentUser) {
+                currentUser = firebase.auth().currentUser;
+            }
 
+            if (currentUser) {
+                const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
+                const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
+                let signInMethods = [];
+                currentUser.providerData.forEach(value => {
+                    signInMethods.push(value.providerId)
+                })
+                return {
+                    hasPssword: signInMethods.indexOf(signinPassword) != -1,
+                    hasMailLink: signInMethods.indexOf(signinMailLink) != -1,
+                    hasGoogle: signInMethods.indexOf("google.com") != -1,
+                    hasFacebook: signInMethods.indexOf("facebook.com") != -1,
+                    hasGithub: signInMethods.indexOf("github.com") != -1,
+                    hasTwitter: signInMethods.indexOf("twitter.com") != -1
+                }
+            }
+
+            return {
+                hasPssword: false,
+                hasMailLink: false,
+                hasGoogle: false,
+                hasFacebook: false,
+                hasMailLink: false,
+                hasMailLink: false
+            }
         }
 
         /* 
@@ -372,9 +520,23 @@
             });
         }
 
-        function notice(elem, title, message){
+        /* 
+         * notice
+         *-------------------------------------------------------------------
+         */
+        function notice(elem, title, message) {
             elem.innerHTML = `<h2>${title}</h2>
             <p>${message}</p>`
+        }
+        /* 
+        * get()
+        *-------------------------------------------------------------------
+        */
+        function get(elem) {
+            return document.querySelector(elem)
+        }
+        function all(elems) {
+            return document.querySelectorAll(elems)
         }
     </script>
 </body>
