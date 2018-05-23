@@ -8,26 +8,37 @@
 </head>
 
 <body>
-
     <button type="button" id="check_signin">check signin</button>
-    <div id="sign" style="display: none;">sign in!</div>
+    <div id="sign"></div>
     <input id="email" type="email">
     <input id="password" type="password">
     <button type="button" id="signup">signup</button>
     <button type="button" id="signin" disabled>signin</button>
     <button type="button" id="signout" disabled>signout</button>
     <button type="button" id="signup_mail_link" disabled>signup mail link</button>
-    <div>
-        <button type="button" class="signin_provider" data-provider="google" data-action="popup">google popup</button>
+    
+    <div style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
+        <button type="button" id="signinGooglePopup" class="signin_provider" data-provider="google" data-action="popup">google popup</button>
         <br>
-        <button type="button" class="signin_provider" data-provider="google" data-action="redirect">google redirect</button>
+        <button type="button" id="signinGoogleRedirect" class="signin_provider" data-provider="google" data-action="redirect">google redirect</button>
         <br>
         <button type="button" class="signin_provider" data-provider="facebook" data-action="popup">facebook popup</button>
         <br>
         <button type="button" class="signin_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
         <br>
-        <button type="button" id="test">test</button>
     </div>
+    <div style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
+        <button type="button" class="add_provider" data-provider="google" data-action="popup">google popup</button>
+        <br>
+        <button type="button" class="add_provider" data-provider="google" data-action="redirect">google redirect</button>
+        <br>
+        <button type="button" class="add_provider" data-provider="facebook" data-action="popup">facebook popup</button>
+        <br>
+        <button type="button" class="add_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
+        <br>
+    </div>
+    <button type="button" id="test">test</button>
+
     <script type="text/javascript">
         // Initialize Firebase
         var config = {
@@ -47,59 +58,66 @@
         const checkSignin = document.querySelector('#check_signin')
         const signupMailLink = document.querySelector('#signup_mail_link')
         const signinProviders = document.querySelectorAll('.signin_provider')
+        const addProviders = document.querySelectorAll('.add_provider')
         const test = document.querySelector('#test')
 
         firebase.auth().languageCode = 'ja'
         // firebase.auth().useDeviceLanguage()
 
-        test.addEventListener('click', event => {
-            const email = document.querySelector('#email').value
-            const password = document.querySelector('#password').value
+        addProviders.forEach(addProvider => {
+            addProvider.addEventListener('click', event => {
+                const currentUser = firebase.auth().currentUser;
+                console.log(currentUser)
 
-            const credential = firebase.auth.EmailAuthProvider.credential(email, password);
-            console.log(credential)
 
-            auth.currentUser.link(credential)
-                .then(function (user) {
-                    console.log("Account linking success", user);
-                }, function (error) {
-                    console.log("Account linking error", error);
-                });
+                var provider = new firebase.auth.FacebookAuthProvider();
+
+                currentUser.linkWithPopup(provider)
+                    .then(function (result) {
+                        // Accounts successfully linked.
+                        var credential = result.credential;
+                        var user = result.user;
+                        alert("Facebookアカウントのリンクに成功しました。Facebookアカウントでログインできるようになりました")
+                        // ...
+                    }).catch(function (error) {
+                        // Handle Errors here.
+                        alert("Facebookアカウントのリンク中にエラーが発生しました")
+                    });
+            })
         })
+
 
         /* 
          * sign up
          *-------------------------------------------------------------------
          */
-         signup.addEventListener('click', () => {
+        signup.addEventListener('click', () => {
             const email = document.querySelector('#email').value
             const password = document.querySelector('#password').value
-
             firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(user => {
-                    console.log('signup!', user)
-                }, error => {
-                    console.log(error.code)
-                    console.log(error.message)
-                })
+                .then(user => { })
+                .catch(
+                    error => {
+                        console.log(error.code)
+                        console.log(error.message)
+                    })
         })
-
 
         /* 
          * sign in
          *-------------------------------------------------------------------
          */
-         signin.addEventListener('click', () => {
+        signin.addEventListener('click', () => {
             const email = document.querySelector('#email').value
             const password = document.querySelector('#password').value
 
             firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(user => {
-                    console.log('signin!', user)
-                }, error => {
-                    console.log(error.code)
-                    console.log(error.message)
-                })
+                .then(user => { })
+                .catch(
+                    error => {
+                        console.log(error.code)
+                        console.log(error.message)
+                    })
         })
 
         /* 
@@ -117,20 +135,22 @@
         signupMailLink.addEventListener('click', event => {
             const email = document.querySelector('#email').value
             const password = document.querySelector('#password').value
-
             firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
                 .then(() => {
                     // The link was successfully sent. Inform the user.
                     // Save the email locally so you don't need to ask the user for it again
                     // if they open the link on the same device.
                     window.localStorage.setItem('emailForSignIn', email);
-                    console.log('email for sign in seved.')
+                    notice(sign, 'info', 'email for sign in seved.<br>check your email and click signin url.')
                 }, error => {
-                    console.log(error.code)
-                    console.log(error.message)
+                    notice(sign, error.code, error.message)
                 });
         })
 
+        /* 
+         * receive signin with mail
+         *-------------------------------------------------------------------
+         */
         // Confirm the link is a sign-in with email link.
         if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
 
@@ -148,48 +168,20 @@
                     window.localStorage.removeItem('emailForSignIn');
 
                     // result
-                    console.log(result)
-                    console.log(result.additionalUserInfo)
-                    console.log(result.additionalUserInfo.isNewUser)
+                    const isNewUser = result.additionalUserInfo.isNewUser
+                    const providerId = result.additionalUserInfo.providerId
+                    const credentialcredential = result.credentialcredential
+                    const operationType = result.operationType
+                    const user = result.user
+                    console.log(isNewUser)
+                    console.log(providerId)
+                    console.log(credentialcredential)
+                    console.log(operationType)
+                    console.log(user)
                 }, error => {
-                    console.log(error.code)
-                    console.log(error.message)
+                    notice(sign, error.code, error.message)
                 });
         }
-
-        // chack signin type
-        email.addEventListener('keyup', event => {
-            firebase.auth().fetchSignInMethodsForEmail(event.target.value)
-                .then(signInMethods => {
-                    const signinPasswordType = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
-                    const hasPssword = signInMethods.indexOf(signinPasswordType) != -1
-                    const signinMailLinkType = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
-                    const hasMailLink = signInMethods.indexOf(signinMailLinkType) != -1
-                    // type password
-                    if (hasPssword) {
-                        signin.disabled = false
-                        signup.disabled = true
-                    } else {
-                        signin.disabled = true
-                    }
-                    // type mail link
-                    if (hasMailLink) {
-                        signupMailLink.disabled = false
-                        signup.disabled = true
-                    } else {
-                        signupMailLink.disabled = true
-                    }
-
-                    if (!hasPssword && !hasMailLink) {
-                        signup.disabled = false
-                    }
-                }, error => {
-                    console.log(error)
-                    signup.disabled = false
-                    signupMailLink.disabled = true
-                    signin.disabled = true
-                })
-        })
 
         /* 
          * signin with provider
@@ -225,18 +217,14 @@
                         .then(result => {
                             // This gives you a Google Access Token. You can use it to access the Google API.
                             var token = result.credential.accessToken;
-                            // The signed-in user info.
                             var user = result.user;
+                            var credential = result.credential;
                             console.log(token)
                             console.log(user)
-                            console.log('signin!', user)
+                            console.log(credential)
                         }, error => {
-                            // Handle Errors here.
-                            console.log(error.code)
-                            console.log(error.message)
-                            // The email of the user's account used.
+                            notice(sign, error.code, error.message)
                             console.log(error.email)
-                            // The firebase.auth.AuthCredential type that was used.
                             console.log(error.credential)
                         })
                 }
@@ -252,22 +240,18 @@
          */
         firebase.auth().getRedirectResult()
             .then(result => {
-                console.log(result)
                 if (result.credential) {
                     // This gives you a Google Access Token. You can use it to access the Google API.
                     var token = result.credential.accessToken;
+                    var user = result.user;
+                    var credential = result.credential;
                     console.log(token)
+                    console.log(user)
+                    console.log(uscredentialer)
                 }
-                // The signed-in user info.
-                var user = result.user;
-                console.log(user)
             }).catch(function (error) {
-                // Handle Errors here.
-                console.log(error.code)
-                console.log(error.message)
-                // The email of the user's account used.
+                notice(sign, error.code, error.message)
                 console.log(error.email)
-                // The firebase.auth.AuthCredential type that was used.
                 console.log(error.credential)
             });
 
@@ -278,10 +262,39 @@
         signout.addEventListener('click', () => {
             firebase.auth().signOut()
                 .then(() => {
-                    console.log('signout!')
+                    sign.innerHTML = 'signout!'
                 }, error => {
-                    console.log(error.code)
-                    console.log(error.message)
+                    notice(sign, error.code, error.message)
+                })
+        })
+
+        /* 
+         * chack signin type
+         *-------------------------------------------------------------------
+         */
+        email.addEventListener('keyup', event => {
+            getSigninMethodsFromEmailAddress(event.target.value)
+                .then(result => {
+                    console.log(result)
+                    signin.disabled = result.hasPssword
+                    signupMailLink.disabled = result.hasMailLink
+                    signinGooglePopup = result.hasGoogle
+                    signinGoogleRedirect = result.hasGoogle
+                    signinFacebookPopup = result.hasFacebook
+                    signinFacebookRedirect = result.hasFacebook
+                    signinGithubPopup = result.hasGithub
+                    signinGithubRedirect = result.hasGithub
+                    signinhasTwitterPopup = result.hasTwitter
+                    signinhasTwitterRedirect = result.hasTwitter
+
+                    if (result.hasPssword) {
+                        signup.disabled = false
+                    } else {
+                        signup.disabled = true
+                    }
+                })
+                .catch(error => {
+                    console.log('inputting...')
                 })
         })
 
@@ -290,9 +303,18 @@
          *-------------------------------------------------------------------
          */
         checkSignin.addEventListener('click', event => {
-            var user = firebase.auth().currentUser;
-            if (user) {
+            const currentUser = firebase.auth().currentUser;
+            if (currentUser) {
                 alert('user sign in!')
+                console.log(currentUser)
+                console.log(currentUser.displayName)
+                console.log(currentUser.emailemail)
+                console.log(currentUser.emailVerified)
+                console.log(currentUser.metadata.creationTime)
+                console.log(currentUser.metadata.lastSignInTime)
+                console.log(currentUser.phoneNumber)
+                console.log(currentUser.photoURL)
+                console.log(currentUser.providerData)
             } else {
                 alert('user not sign in!')
             }
@@ -304,14 +326,56 @@
          */
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
-                sign.style.display = 'block'
-                signout.disabled = false
+                notice(sign, 'info', 'signin!')
                 // location.href = 'index.html'
             } else {
-                sign.style.display = 'none'
-                signout.disabled = true
+                notice(sign, 'info', 'not signin!')
             }
         })
+
+        /* 
+         * chack signin method
+         *-------------------------------------------------------------------
+         */
+        function getSigninMethodsFromCurrentUser(currentUser) {
+
+        }
+
+        /* 
+         * chack signin method
+         *-------------------------------------------------------------------
+         */
+        function getSigninMethodsFromEmailAddress(emailAddress) {
+            return new Promise((resolve, reject) => {
+                firebase.auth().fetchSignInMethodsForEmail(emailAddress)
+                    .then(signInMethods => {
+                        const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
+                        const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
+                        resolve({
+                            hasPssword: signInMethods.indexOf(signinPassword) != -1,
+                            hasMailLink: signInMethods.indexOf(signinMailLink) != -1,
+                            hasGoogle: signInMethods.indexOf("google.com") != -1,
+                            hasFacebook: signInMethods.indexOf("facebook.com") != -1,
+                            hasGithub: signInMethods.indexOf("github.com") != -1,
+                            hasTwitter: signInMethods.indexOf("twitter.com") != -1
+                        })
+                    }, error => {
+                        reject({
+                            hasPssword: false,
+                            hasMailLink: false,
+                            hasGoogle: false,
+                            hasFacebook: false,
+                            hasMailLink: false,
+                            hasMailLink: false
+                        })
+                    })
+            });
+        }
+
+        function notice(elem, title, message){
+            elem.innerHTML = `<h2>${title}</h2>
+            <p>${message}</p>`
+        }
     </script>
 </body>
 
