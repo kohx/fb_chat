@@ -4,20 +4,84 @@
 <head>
     <meta charset="UTF-8">
     <title>Sample FirebaseUI App</title>
-    <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script>
+    <!-- <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script> -->
+    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+
+    <style>
+        #info {
+            padding: .6rem;
+            margin: 10px 0;
+            border: 1px solid silver;
+        }
+
+        #info h2 {
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0;
+            margin: 0;
+        }
+
+        .user_box {
+            border: 1px solid silver;
+            font-size: 0.6rem;
+            padding: 0.6rem;
+            margin: 0;
+        }
+
+        .user_title {
+            font-weight: bold;
+        }
+
+        #input_box,
+        #signin_box,
+        #add_box {
+            border: 1px solid silver;
+            margin: 10px 0;
+        }
+
+        #add_google,
+        #add_facebook,
+        #add_github,
+        #add_twitter,
+        #signin_google,
+        #signin_facebook,
+        #signin_github,
+        #signin_twitter {
+            display: flex;
+        }
+
+        #add_google button,
+        #add_facebook button,
+        #add_github button,
+        #add_twitter button,
+        #signin_google button,
+        #signin_facebook button,
+        #signin_github button,
+        #signin_twitter button {
+            flex: 1;
+            margin: 1px;
+        }
+    </style>
 </head>
 
 <body>
-    <button type="button" id="check_signin">check signin</button>
-    <div id="sign"></div>
-    <input id="email" type="email">
-    <input id="password" type="password">
-    <button type="button" id="signup">signup</button>
-    <button type="button" id="signin" disabled>signin</button>
-    <button type="button" id="signout" disabled>signout</button>
-    <button type="button" id="signup_mail_link" disabled>signup mail link</button>
 
-    <div id="signin_box" style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
+    <div>
+        <img class="user_photo" height="30">
+        <button type="button" id="signout" disabled>signout</button>
+        <div id="info"></div>
+    </div>
+
+    <div id="input_box">
+        <input id="email" type="email" placeholder="email">
+        <input id="password" type="password" placeholder="password">
+        <button type="button" id="signup">signup</button>
+        <button type="button" id="signin" disabled>signin</button>
+        <button type="button" id="signup_mail_link" disabled>signup mail link</button>
+    </div>
+
+    <div>sign in with provider</div>
+    <div id="signin_box">
         <div id="signin_google">
             <button type="button" class="signin_provider" data-provider="google" data-action="popup">google popup</button>
             <button type="button" class="signin_provider" data-provider="google" data-action="redirect">google redirect</button>
@@ -36,31 +100,57 @@
         </div>
     </div>
 
-    <div id="add_box" style="border: 1px solid silver; padding: 10px; margin: 10px 0;">
-        <div id="add_google">
+    <div>add sign in provider</div>
+    <div id="add_box">
+        <div id="add_google" style="display: flex;">
             <button type="button" class="add_provider" data-provider="google" data-action="popup">google popup</button>
             <button type="button" class="add_provider" data-provider="google" data-action="redirect">google redirect</button>
+            <button type="button" class="remove_provider" data-provider="google" data-action="redirect">google remove</button>
         </div>
-        <div id="add_facebook">
+        <div id="add_facebook" style="display: flex;">
             <button type="button" class="add_provider" data-provider="facebook" data-action="popup">facebook popup</button>
             <button type="button" class="add_provider" data-provider="facebook" data-action="redirect">facebook redirect</button>
+            <button type="button" class="remove_provider" data-provider="facebook" data-action="redirect">facebook remove</button>
         </div>
-        <div id="add_github">
+        <div id="add_github" style="display: flex;">
             <button type="button" class="add_provider" data-provider="github" data-action="popup">github popup</button>
             <button type="button" class="add_provider" data-provider="github" data-action="redirect">github redirect</button>
+            <button type="button" class="remove_provider" data-provider="github" data-action="redirect">github remove</button>
         </div>
-        <div id="add_twitter">
+        <div id="add_twitter" style="display: flex;">
             <button type="button" class="add_provider" data-provider="twitter" data-action="popup">twitter popup</button>
             <button type="button" class="add_provider" data-provider="twitter" data-action="redirect">twitter redirect</button>
+            <button type="button" class="remove_provider" data-provider="twitter" data-action="redirect">twitter remove</button>
             <br>
         </div>
     </div>
 
     <button type="button" id="test">test</button>
 
+    <div class="user_box">
+        <div class="user_title">uid</div>
+        <div class="user_value user_uid"></div>
+        <div class="user_title">user_displayName</div>
+        <div class="user_value user_displayName"></div>
+        <div class="user_title">user_email</div>
+        <div class="user_value user_email"></div>
+        <div class="user_title">user_email_verified</div>
+        <div class="user_value user_email_verified"></div>
+        <div class="user_title">user_creation_time</div>
+        <div class="user_value user_creation_time"></div>
+        <div class="user_title">user_last_signin_time</div>
+        <div class="user_value user_last_signin_time"></div>
+        <div class="user_title">user_phone_number</div>
+        <div class="user_value user_phone_number"></div>
+        <div class="user_title">user_photo_url</div>
+        <div class="user_value user_photo_url"></div>
+        <div class="user_title">user_provider_data</div>
+        <div class="user_value user_provider_data"></div>
+    </div>
+
     <script type="text/javascript">
         // Initialize Firebase
-        var config = {
+        const config = {
             apiKey: "AIzaSyC_DO9wHhHtZ0Ei7BtmM7mLcMG-4h0rx-I",
             authDomain: "freindlychat-16c81.firebaseapp.com",
             databaseURL: "https://freindlychat-16c81.firebaseio.com",
@@ -70,19 +160,13 @@
         };
         firebase.initializeApp(config)
 
-        const sign = document.querySelector('#sign')
+        const info = document.querySelector('#info')
+
         const signup = document.querySelector('#signup')
         const signin = document.querySelector('#signin')
         const signout = document.querySelector('#signout')
 
-        const checkSignin = document.querySelector('#check_signin')
         const signupMailLink = document.querySelector('#signup_mail_link')
-
-        const signinBox = document.querySelector('#signin_box')
-        const signinProviders = document.querySelectorAll('.signin_provider')
-
-        const addBox = document.querySelector('#add_box')
-        const addProviders = document.querySelectorAll('.add_provider')
 
         const test = document.querySelector('#test')
 
@@ -93,76 +177,39 @@
             alert('test!')
         })
 
-
-        /* 
-         * 
-         *-------------------------------------------------------------------
-         */
-        all('.add_provider').forEach(addProvider => {
-            addProvider.addEventListener('click', event => {
-                const currentUser = firebase.auth().currentUser
-                const target = event.target.dataset
-                let provider = null
-                switch (target.provider) {
-                    case 'google':
-                        provider = new firebase.auth.GoogleAuthProvider()
-                        break;
-
-                    case 'facebook':
-                        provider = new firebase.auth.FacebookAuthProvider();
-                        break;
-
-                    case 'github':
-                        provider = new firebase.auth.GithubAuthProvider();
-                        break;
-
-                    case 'twitter':
-                        provider = new firebase.auth.TwitterAuthProvider();
-                        break;
-
-                    default:
-                        break;
-                }
-
-                if (target.action == 'popup') {
-                    currentUser.linkWithPopup(provider)
-                        .then(result => {
-                            notice(sign, 'info', "Facebookアカウントのリンクに成功しました。Facebookアカウントでログインできるようになりました")
-                            var token = result.credential.accessToken;
-                            var user = result.user;
-                            var credential = result.credential;
-                            console.log(token)
-                            console.log(user)
-                            console.log(credential)
-
-                            changeUi(user)
-                        }, error => {
-                            notice(sign, error.code, error.message)
-                            console.log(error.email)
-                            console.log(error.credential)
-                        })
-                }
-
-                if (target.action == 'redirect') {
-                    firebase.auth().linkWithRedirect(provider)
-                }
-            })
-        })
-
         /* 
          * sign up
          *-------------------------------------------------------------------
          */
         signup.addEventListener('click', () => {
-            const email = document.querySelector('#email').value
-            const password = document.querySelector('#password').value
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(user => { })
-                .catch(
-                    error => {
-                        console.log(error.code)
-                        console.log(error.message)
+
+            // Whether you are logged in 
+            if (firebase.auth().currentUser) {
+                // set mail and password
+                firebase.auth.EmailAuthProvider.credential(email, password)
+                    .then(user => {
+                        console.log(user)
                     })
+                    .catch(error => {
+                        notice(info, error.code, error.message)
+                    })
+
+                // firebase.auth().currentUser.linkAndRetrieveDataWithCredential(credential)
+                //     .then(user => { })
+                //     .catch(error => {
+                //         notice(info, error.code, error.message)
+                //     })
+
+            } else {
+                // sign up
+                const email = document.querySelector('#email').value
+                const password = document.querySelector('#password').value
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .then(user => { })
+                    .catch(error => {
+                        notice(info, error.code, error.message)
+                    })
+            }
         })
 
         /* 
@@ -175,18 +222,16 @@
 
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then(user => { })
-                .catch(
-                    error => {
-                        console.log(error.code)
-                        console.log(error.message)
-                    })
+                .catch(error => {
+                    notice(info, error.code, error.message)
+                })
         })
 
         /* 
-         * signin with mail
+         * signin with mail [send]
          *-------------------------------------------------------------------
          */
-        var actionCodeSettings = {
+        const actionCodeSettings = {
             // URL you want to redirect back to. The domain (www.example.com) for this
             // URL must be whitelisted in the Firebase Console.
             url: 'http://localhost:5000/login.html',
@@ -203,16 +248,18 @@
                     // Save the email locally so you don't need to ask the user for it again
                     // if they open the link on the same device.
                     window.localStorage.setItem('emailForSignIn', email);
-                    notice(sign, 'info', 'email for sign in seved.<br>check your email and click signin url.')
-                }, error => {
-                    notice(sign, error.code, error.message)
-                });
+                    notice(info, 'info', 'email for sign in seved.<br>check your email and click signin url.')
+                })
+                .catch(error => {
+                    notice(info, error.code, error.message)
+                })
         })
 
         /* 
-         * receive signin with mail
+         * signin with mail [receive]
          *-------------------------------------------------------------------
          */
+
         // Confirm the link is a sign-in with email link.
         if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
 
@@ -225,7 +272,7 @@
             }
 
             firebase.auth().signInWithEmailLink(emailForSignIn, window.location.href)
-                .then(function (result) {
+                .then(result => {
                     // Clear email from storage.
                     window.localStorage.removeItem('emailForSignIn');
 
@@ -240,16 +287,17 @@
                     console.log(credentialcredential)
                     console.log(operationType)
                     console.log(user)
-                }, error => {
-                    notice(sign, error.code, error.message)
-                });
+                })
+                .catch(error => {
+                    notice(info, error.code, error.message)
+                })
         }
 
         /* 
-         * signin with provider
+         * signin with provider [popup], [redirect send]
          *-------------------------------------------------------------------
          */
-        signinProviders.forEach(signinProvider => {
+        all('.signin_provider').forEach(signinProvider => {
             signinProvider.addEventListener('click', event => {
                 const target = event.target.dataset
                 let provider = null
@@ -294,14 +342,15 @@
                     firebase.auth().signInWithPopup(provider)
                         .then(result => {
                             // This gives you a Google Access Token. You can use it to access the Google API.
-                            var token = result.credential.accessToken;
-                            var user = result.user;
-                            var credential = result.credential;
+                            const token = result.credential.accessToken;
+                            const user = result.user;
+                            const credential = result.credential;
                             console.log(token)
                             console.log(user)
                             console.log(credential)
-                        }, error => {
-                            notice(sign, error.code, error.message)
+                        })
+                        .catch(error => {
+                            notice(info, error.code, error.message)
                             console.log(error.email)
                             console.log(error.credential)
                         })
@@ -314,24 +363,134 @@
         })
 
         /* 
-         * redirect receive
+         * add provider link [popup], [redirect send]
+         *-------------------------------------------------------------------
+         */
+        all('.add_provider').forEach(addProvider => {
+            addProvider.addEventListener('click', event => {
+                const currentUser = firebase.auth().currentUser
+                const target = event.target.dataset
+                let provider = null
+                switch (target.provider) {
+                    case 'google':
+                        provider = new firebase.auth.GoogleAuthProvider()
+                        break;
+                    case 'facebook':
+                        provider = new firebase.auth.FacebookAuthProvider();
+                        break;
+                    case 'github':
+                        provider = new firebase.auth.GithubAuthProvider();
+                        break;
+                    case 'twitter':
+                        provider = new firebase.auth.TwitterAuthProvider();
+                        break;
+                    default:
+                        break;
+                }
+
+                if (target.action == 'popup') {
+                    currentUser.linkWithPopup(provider)
+                        .then(result => {
+                            notice(info, 'info', "Facebookアカウントのリンクに成功しました。Facebookアカウントでログインできるようになりました")
+                            const token = result.credential.accessToken;
+                            const user = result.user;
+                            const credential = result.credential;
+                            console.log(token)
+                            console.log(user)
+                            console.log(credential)
+
+                            changeUi(user)
+                        })
+                        .catch(error => {
+                            if (error.credential) {
+                                otherSignin(error.credential)
+                            } else {
+                                notice(info, error.code, error.message)
+                            }
+                        })
+                }
+
+                if (target.action == 'redirect') {
+                    currentUser.linkWithRedirect(provider)
+                }
+            })
+        })
+
+        /* 
+         * signin with provider [redirect recieve]
+         * add provider link [redirect recieve]
+         *-------------------------------------------------------------------
          */
         firebase.auth().getRedirectResult()
             .then(result => {
                 if (result.credential) {
-                    // This gives you a Google Access Token. You can use it to access the Google API.
-                    var token = result.credential.accessToken;
-                    var user = result.user;
-                    var credential = result.credential;
+                    const token = result.credential.accessToken;
+                    const user = result.user;
+                    const credential = result.credential;
                     console.log(token)
                     console.log(user)
                     console.log(uscredentialer)
                 }
-            }).catch(function (error) {
-                notice(sign, error.code, error.message)
-                console.log(error.email)
-                console.log(error.credential)
-            });
+            })
+            .catch(error => {
+                if (error.credential) {
+                    otherSignin(error.credential)
+                } else {
+                    notice(info, error.code, error.message)
+                }
+            })
+
+        function otherSignin(credential) {
+
+            // 現在ログインしているユーザーへの参照を取得する
+            const prevUser = firebase.auth().currentUser;
+
+            // 別のアカウントでユーザーにログインする
+            firebase.auth().signInWithCredential(credential)
+                .then(nextUser => {
+                    // console.log("Sign In Success", nextUser);
+
+                    // const currentUser = otherUser
+                    // Merge prevUser and currentUser data stored in Firebase.
+                    // Note: How you handle this is specific to your application
+
+                    // データの移行後、重複したユーザーを削除します
+                    return nextUser.delete()
+                        .then(result => {
+                            // 元のアカウントにOAuthクレデンシャルをリンクする
+                            return prevUser.linkWithCredential(credential)
+                        })
+                        .then(() => {
+                            // 新しくリンクされたクレデンシャルでサインインする
+                            return firebase.auth().signInWithCredential(credential);
+                        })
+                }).catch(error => {
+                    console.log("Sign In Error", error);
+                });
+        }
+
+        /* 
+         * remove provider link
+         *-------------------------------------------------------------------
+         */
+        all('.remove_provider').forEach(removeProvdier => {
+            removeProvdier.addEventListener('click', event => {
+                const currentUser = firebase.auth().currentUser
+                console.log(currentUser)
+                target = event.target.dataset
+                let providerId = `${target.provider}.com`
+                // give provider id
+                currentUser.unlink(providerId)
+                    .then(user => {
+                        changeUi(user)
+                    })
+                    .catch(error => {
+                        notice(info, error.code, error.message)
+                        console.log(error.email)
+                        console.log(error.credential)
+                    })
+            })
+        })
 
         /* 
          * sign out
@@ -339,10 +498,9 @@
          */
         signout.addEventListener('click', () => {
             firebase.auth().signOut()
-                .then(() => {
-                    sign.innerHTML = 'signout!'
-                }, error => {
-                    notice(sign, error.code, error.message)
+                .then(() => { })
+                .catch(error => {
+                    notice(info, error.code, error.message)
                 })
         })
 
@@ -356,14 +514,19 @@
                     console.log(result)
                     signin.disabled = result.hasPssword
                     signupMailLink.disabled = result.hasMailLink
-                    signinGooglePopup = result.hasGoogle
-                    signinGoogleRedirect = result.hasGoogle
-                    signinFacebookPopup = result.hasFacebook
-                    signinFacebookRedirect = result.hasFacebook
-                    signinGithubPopup = result.hasGithub
-                    signinGithubRedirect = result.hasGithub
-                    signinhasTwitterPopup = result.hasTwitter
-                    signinhasTwitterRedirect = result.hasTwitter
+
+                    all('#signin_google .signin_provider').array.forEach(element => {
+                        element.disabled = result.hasGoogle
+                    });
+                    all('#signin_facebook .signin_provider').array.forEach(element => {
+                        element.disabled = result.hasFacebook
+                    });
+                    all('#signin_github .signin_provider').array.forEach(element => {
+                        element.disabled = result.hasGithub
+                    });
+                    all('#signin_twitter .signin_provider').array.forEach(element => {
+                        element.disabled = result.hasTwitter
+                    });
 
                     if (result.hasPssword) {
                         signup.disabled = false
@@ -377,96 +540,126 @@
         })
 
         /* 
-         * check sign in
-         *-------------------------------------------------------------------
-         */
-        checkSignin.addEventListener('click', event => {
-            const currentUser = firebase.auth().currentUser;
-            if (currentUser) {
-                alert('user sign in!')
-                console.log(currentUser)
-                console.log(currentUser.displayName)
-                console.log(currentUser.emailemail)
-                console.log(currentUser.emailVerified)
-                console.log(currentUser.metadata.creationTime)
-                console.log(currentUser.metadata.lastSignInTime)
-                console.log(currentUser.phoneNumber)
-                console.log(currentUser.photoURL)
-                console.log(currentUser.providerData)
-            } else {
-                alert('user not sign in!')
-            }
-        })
-
-        /* 
          * change Auth state
          *-------------------------------------------------------------------
          */
         firebase.auth().onAuthStateChanged(user => {
+
+            // show signout button
             changeUi(user)
+            changeUserInfo(user)
 
             if (user) {
-                // show notice
-                notice(sign, 'info', 'signin!')
-                // show signout button
-                changeUi
 
-                // location.href = 'index.html'
             } else {
-                notice(sign, 'info', 'not signin!')
+
             }
         })
 
+        /* 
+         * function
+         * for change ui
+         *-------------------------------------------------------------------
+         */
+        function changeUserInfo(user) {
+            if (user) {
+                let providers = []
+                const methods = getSigninMethodsFromCurrentUser(user)
+                const methodObj = (Object.entries(methods).map(([key, value]) => ({ key, value })))
+                methodObj.forEach(provider => {
+                    if (provider.value == true) {
+                        providers.push(provider.key)
+                    }
+                });
+                get('.user_photo').src = user.photoURL || 'none'
+                get('.user_uid').textContent = user.uid || 'none'
+                get('.user_displayName').textContent = user.displayName || 'none'
+                get('.user_email').textContent = user.email || 'none'
+                get('.user_email_verified').textContent = user.emailVerified || 'none'
+                get('.user_creation_time').textContent = Date(user.metadata.creationTime) || 'none'
+                get('.user_last_signin_time').textContent = Date(user.metadata.lastSignInTime) || 'none'
+                get('.user_phone_number').textContent = user.phoneNumber || 'none'
+                get('.user_photo_url').textContent = user.photoURL || 'none'
+                get('.user_provider_data').textContent = providers || 'none'
+            } else {
+                get('.user_photo').src = ''
+                get('.user_uid').textContent = '---'
+                get('.user_displayName').textContent = '---'
+                get('.user_email').textContent = '---'
+                get('.user_email_verified').textContent = '---'
+                get('.user_creation_time').textContent = '---'
+                get('.user_last_signin_time').textContent = '---'
+                get('.user_phone_number').textContent = '---'
+                get('.user_photo_url').textContent = '---'
+                get('.user_provider_data').textContent = '---'
+            }
+        }
+
+        /* 
+         * function
+         * for change ui
+         *-------------------------------------------------------------------
+         */
         function changeUi(user) {
+            email.value = ''
+            password.value = ''
             if (user) {
                 // show signout button
                 signout.disabled = false
                 // hide signin with provider
-                all('.signin_provider').forEach(elment => {
-                    elment.disabled = true
+                all('.signin_provider').forEach(element => {
+                    element.disabled = true
                 })
                 // hide provider add
                 const methods = getSigninMethodsFromCurrentUser(user)
-                all('#add_google .add_provider').forEach(elment => {
-                    elment.disabled = methods.hasGoogle
+                all('#add_google .add_provider').forEach(element => {
+                    element.disabled = methods.hasGoogle
                 })
-                all('#add_facebook .add_provider').forEach(elment => {
-                    elment.disabled = methods.hasFacebook
+                get('#add_google .remove_provider').disabled = !methods.hasGoogle
+
+                all('#add_facebook .add_provider').forEach(element => {
+                    element.disabled = methods.hasFacebook
                 })
-                all('#add_github .add_provider').forEach(elment => {
-                    elment.disabled = methods.hasGithub
+                get('#add_facebook .remove_provider').disabled = !methods.hasFacebook
+
+                all('#add_github .add_provider').forEach(element => {
+                    element.disabled = methods.hasGithub
                 })
-                all('#add_twitter .add_provider').forEach(elment => {
-                    elment.disabled = methods.hasTwitter
+                get('#add_github .remove_provider').disabled = !methods.hasGithub
+
+                all('#add_twitter .add_provider').forEach(element => {
+                    element.disabled = methods.hasTwitter
                 })
+                get('#add_twitter .remove_provider').disabled = !methods.hasTwitter
 
                 // location.href = 'index.html'
             } else {
                 signout.disabled = true
-                all('.signin_provider').forEach(elment => {
-                    elment.disabled = false
+                all('.signin_provider').forEach(element => {
+                    element.disabled = false
                 })
 
-                all('.add_provider').forEach(elment => {
-                    elment.disabled = true
+                all('.add_provider').forEach(element => {
+                    element.disabled = true
+                })
+
+                all('.remove_provider').forEach(element => {
+                    element.disabled = true
                 })
             }
         }
 
         /* 
+         * function
          * chack signin method from current user
          *-------------------------------------------------------------------
          */
-        function getSigninMethodsFromCurrentUser(currentUser = null) {
-            if (!currentUser) {
-                currentUser = firebase.auth().currentUser;
-            }
-
-            if (currentUser) {
+        function getSigninMethodsFromCurrentUser(user) {
+            if (user) {
                 const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
                 const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
                 let signInMethods = [];
-                currentUser.providerData.forEach(value => {
+                user.providerData.forEach(value => {
                     signInMethods.push(value.providerId)
                 })
                 return {
@@ -478,7 +671,6 @@
                     hasTwitter: signInMethods.indexOf("twitter.com") != -1
                 }
             }
-
             return {
                 hasPssword: false,
                 hasMailLink: false,
@@ -490,6 +682,7 @@
         }
 
         /* 
+         * function
          * chack signin method
          *-------------------------------------------------------------------
          */
@@ -497,6 +690,7 @@
             return new Promise((resolve, reject) => {
                 firebase.auth().fetchSignInMethodsForEmail(emailAddress)
                     .then(signInMethods => {
+                        console.log(signInMethods)
                         const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
                         const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
                         resolve({
@@ -507,7 +701,8 @@
                             hasGithub: signInMethods.indexOf("github.com") != -1,
                             hasTwitter: signInMethods.indexOf("twitter.com") != -1
                         })
-                    }, error => {
+                    })
+                    .catch(error => {
                         reject({
                             hasPssword: false,
                             hasMailLink: false,
@@ -521,20 +716,24 @@
         }
 
         /* 
+         * function
          * notice
          *-------------------------------------------------------------------
          */
         function notice(elem, title, message) {
             elem.innerHTML = `<h2>${title}</h2>
-            <p>${message}</p>`
+            <div>${message}</div>`
         }
+
         /* 
-        * get()
+         * function
+         * get element
         *-------------------------------------------------------------------
         */
         function get(elem) {
             return document.querySelector(elem)
         }
+
         function all(elems) {
             return document.querySelectorAll(elems)
         }
