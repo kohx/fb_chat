@@ -68,15 +68,17 @@
     </div>
 
     <div id="input_box">
-        <input id="email" type="email" placeholder="email">
-        <input id="password" type="password" placeholder="password">
-        <button type="button" id="signin" disabled>signin</button>
         <button type="button" id="signup">signup</button>
         <button type="button" id="signup_mail_link" disabled>signup mail link</button>
     </div>
 
     <div>sign in with provider</div>
     <div id="signin_box">
+        <div style="display: flex;">
+            <input id="email" type="email" placeholder="email">
+            <input id="password" type="password" placeholder="password">
+            <button type="button" id="signin" disabled>signin</button>
+        </div>
         <div id="signin_google">
             <button type="button" class="signin_provider" data-provider="google" data-action="popup" disabled>google popup</button>
             <button type="button" class="signin_provider" data-provider="google" data-action="redirect" disabled>google redirect</button>
