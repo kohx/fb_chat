@@ -32,7 +32,6 @@
             font-weight: bold;
         }
 
-        #input_box,
         #signin_box,
         #add_box {
             border: 1px solid silver;
@@ -67,17 +66,17 @@
         <div id="info"></div>
     </div>
 
-    <div id="input_box">
-        <button type="button" id="signup">signup</button>
-        <button type="button" id="signup_mail_link" disabled>signup mail link</button>
-    </div>
-
     <div>sign in with provider</div>
     <div id="signin_box">
         <div style="display: flex;">
             <input id="email" type="email" placeholder="email">
             <input id="password" type="password" placeholder="password">
             <button type="button" id="signin" disabled>signin</button>
+            <button type="button" id="signup">signup</button>
+        </div>
+        <div style="display: flex;">
+            <input id="mail_link_address" type="email" placeholder="email">
+            <button type="button" id="signup_mail_link" disabled>signup mail link</button>
         </div>
         <div id="signin_google">
             <button type="button" class="signin_provider" data-provider="google" data-action="popup" disabled>google popup</button>
@@ -168,8 +167,8 @@
         firebase.initializeApp(config)
 
         // elements
-        const info = document.querySelector('#info')
-        const test = document.querySelector('#test')
+        const info = get('#info')
+        const test = get('#test')
 
         // Language setting
         firebase.auth().languageCode = 'ja'
@@ -181,8 +180,8 @@
          *-------------------------------------------------------------------
          */
         get('#signup').addEventListener('click', () => {
-            const email = document.querySelector('#email').value
-            const password = document.querySelector('#password').value
+            const email = get('#email').value
+            const password = get('#password').value
             // sign up
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then(user => { })
@@ -197,8 +196,8 @@
          *-------------------------------------------------------------------
          */
         get('#signin').addEventListener('click', () => {
-            const email = document.querySelector('#email').value
-            const password = document.querySelector('#password').value
+            const email = get('#email').value
+            const password = get('#password').value
 
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then(user => { })
@@ -208,22 +207,19 @@
         })
 
         /* 
-         * signin with mail [send]
+         * signin with mail-password
          * メールとパスワードでサインイン
          *-------------------------------------------------------------------
          */
-        const actionCodeSettings = {
-            // URL you want to redirect back to. The domain (www.example.com) for this
-            // URL must be whitelisted in the Firebase Console.
-            url: 'http://localhost:5000/login.html',
-            // This must be true.
-            handleCodeInApp: true
-        }
-
         get('#signup_mail_link').addEventListener('click', event => {
-            const email = document.querySelector('#email').value
-            const password = document.querySelector('#password').value
-            firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings)
+            const email = get('#mail_link_address').value
+            firebase.auth().sendSignInLinkToEmail(email, {
+                // URL you want to redirect back to. The domain (www.example.com) for this
+                // URL must be whitelisted in the Firebase Console.
+                url: 'http://localhost:5000/login.html',
+                // This must be true.
+                handleCodeInApp: true
+            })
                 .then(() => {
                     // The link was successfully sent. Inform the user.
                     // Save the email locally so you don't need to ask the user for it again
@@ -237,7 +233,7 @@
         })
 
         /* 
-         * receive then signin with mail and password
+         * receive then signin with mail-password
          * メールとパスワードでサインインした場合の受け
          *-------------------------------------------------------------------
          */
@@ -261,12 +257,12 @@
                     // result
                     const isNewUser = result.additionalUserInfo.isNewUser
                     const providerId = result.additionalUserInfo.providerId
-                    const credentialcredential = result.credentialcredential
+                    const credential = result.credential
                     const operationType = result.operationType
                     const user = result.user
                     console.log(isNewUser)
                     console.log(providerId)
-                    console.log(credentialcredential)
+                    console.log(credential)
                     console.log(operationType)
                     console.log(user)
                 })
@@ -440,8 +436,8 @@
             if (!currentUser) {
                 return
             }
-            const email = document.querySelector('#mail_password_address').value
-            const password = document.querySelector('#mail_password_password').value
+            const email = get('#mail_password_address').value
+            const password = get('#mail_password_password').value
 
             // get credential
             const credential = firebase.auth.EmailAuthProvider.credential(email, password)
@@ -509,33 +505,13 @@
          *-------------------------------------------------------------------
          */
         email.addEventListener('keyup', event => {
-            getSigninMethodsFromEmailAddress(event.target.value)
-                .then(result => {
-                    console.log(result)
-                    get('#signup_mail_link').disabled = result.hasMailLink
-
-                    all('#signin_google .signin_provider').array.forEach(element => {
-                        element.disabled = result.hasGoogle
-                    });
-                    all('#signin_facebook .signin_provider').array.forEach(element => {
-                        element.disabled = result.hasFacebook
-                    });
-                    all('#signin_github .signin_provider').array.forEach(element => {
-                        element.disabled = result.hasGithub
-                    });
-                    all('#signin_twitter .signin_provider').array.forEach(element => {
-                        element.disabled = result.hasTwitter
-                    });
-
-                    if (result.hasPssword) {
-                        get('#signup').disabled = false
-                    } else {
-                        get('#signup').disabled = true
-                    }
-                })
-                .catch(error => {
-                    console.log('inputting...')
-                })
+            if (!firebase.auth().currentUser) {
+                getSigninMethodsFromEmailAddress(event.target.value)
+                    .then(result => {
+                        console.log(result)
+                        get('#signup_mail_link').disabled = result.hasMailLink
+                    })
+            }
         })
 
         /* 
@@ -635,14 +611,18 @@
          *-------------------------------------------------------------------
          */
         function changeUi(user) {
-            email.value = ''
-            password.value = ''
-            if (user) {
 
+            get('#email').value = ''
+            get('#password').value = ''
+            get('#mail_password_address').value = ''
+            get('#mail_password_password').value = ''
+            get('#mail_link_address').value = ''
+
+            if (user) {
                 // show signout button
-                get('#signin').disabled = false
+                get('#signin').disabled = true
+                get('#signup_mail_link').disabled = true
                 get('#signout').disabled = false
-                get('#signup').disabled = true
 
                 // hide signin with provider
                 all('.signin_provider').forEach(element => {
@@ -681,7 +661,7 @@
                 // location.href = 'index.html'
             } else {
                 get('#signin').disabled = false
-                get('#signup').disabled = false
+                get('#signup_mail_link').disabled = false
                 get('#signout').disabled = true
 
                 all('.signin_provider').forEach(element => {
