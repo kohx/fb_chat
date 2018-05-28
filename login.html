@@ -69,13 +69,13 @@
     <div>sign in with provider</div>
     <div id="signin_box">
         <div style="display: flex;">
-            <input id="email" type="email" placeholder="email">
-            <input id="password" type="password" placeholder="password">
+            <input id="email" type="email" placeholder="email" disabled>
+            <input id="password" type="password" placeholder="password" disabled>
         </div>
         <div style="display: flex;">
             <button type="button" id="signin_password" disabled>signin password</button>
             <button type="button" id="signin_mail_link" disabled>signin mail link</button>
-            <button type="button" id="signup">signup</button>
+            <button type="button" id="signup" disabled>signup</button>
         </div>
         <div id="signin_google">
             <button type="button" class="signin_provider" data-provider="google" data-action="popup" disabled>google popup</button>
@@ -511,7 +511,6 @@
             if (!firebase.auth().currentUser) {
                 getSigninMethodsFromEmailAddress(event.target.value)
                     .then(result => {
-                        console.log(result)
                         // you can signin with password
                         get('#signin_password').disabled = !result.hasPassword
                         // you can signin with mail link
@@ -581,6 +580,7 @@
             if (user) {
                 getSigninMethodsFromEmailAddress()
                     .then(providers => {
+                        console.log(providers)
                         let providerStrings = []
                         Object.entries(providers).map(([key, value]) => ({ key, value })).forEach(provider => {
                             if (provider.value == true) {
@@ -628,10 +628,19 @@
             get('#mail_password_password').value = ''
 
             if (user) {
+                // サインアウト開ける
                 get('#signout').disabled = false
+                // サインアウト閉める
+                get('#signup').disabled = true
+                // プロバイダサインインすべて開ける
                 all('#signin_box .signin_provider').forEach(element => {
-                    element.disabeld = false
+                    element.disabled = false
                 })
+                // メールインプット閉める
+                get('#email').disabled = true
+                // パスワードインプット閉める
+                get('#password').disabled = true
+
                 getSigninMethodsFromEmailAddress()
                     .then(providers => {
                         get('#mail_password_address').disabled = providers.hasPssword
@@ -661,12 +670,19 @@
                     })
             } else {
                 get('#signout').disabled = true
+                get('#signup').disabled = false
                 all('#signin_box .signin_provider').forEach(element => {
                     element.disabled = false
                 })
-                all('#add_box button, #add_box input').forEach(element => {
-                    element.disabled = true
-                })
+                // メールインプット開ける
+                get('#email').disabled = false
+                // パスワードインプット開ける
+                get('#password').disabled = false
+
+                // アド
+                // all('#add_box button, #add_box input').forEach(element => {
+                //     element.disabled = true
+                // })
             }
         }
 
@@ -685,37 +701,32 @@
                 hasGithub: false,
                 hasTwitter: false
             }
+            console.log(result)
             const email = user && user.email ? user.email : emailAddress
-
             if (email) {
                 await firebase.auth().fetchSignInMethodsForEmail(email)
                     .then(providers => {
+                        // パスワード、メイルリンクはどちらかのみ。
+                        // 両方のときはメールアドレスを追加？
                         const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
-                        const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
                         result.hasPssword = providers.indexOf(signinPassword) != -1
+                        const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
                         result.hasMailLink = providers.indexOf(signinMailLink) != -1
-                        result.hasGoogle = providers.indexOf("google.com") != -1
-                        result.hasFacebook = providers.indexOf("facebook.com") != -1
-                        result.hasGithub = providers.indexOf("github.com") != -1
-                        result.hasTwitter = providers.indexOf("twitter.com") != -1
                     })
                     .catch(error => {
                         return error
                     })
             }
-
-            if (user && !email) {
+            if (user) {
                 let providers = []
                 user.providerData.forEach(provider => {
-                    console.log('in')
                     providers.push(provider.providerId)
                 })
-                result.providers.indexOf("google.com") != -1
-                result.providers.indexOf("facebook.com") != -1
-                result.providers.indexOf("github.com") != -1
-                result.providers.indexOf("twitter.com") != -1
+                result.hasGoogle = providers.indexOf("google.com") != -1
+                result.hasFacebook = providers.indexOf("facebook.com") != -1
+                result.hasGithub = providers.indexOf("github.com") != -1
+                result.hasTwitter = providers.indexOf("twitter.com") != -1
             }
-
             return result
         }
 
