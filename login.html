@@ -71,12 +71,11 @@
         <div style="display: flex;">
             <input id="email" type="email" placeholder="email">
             <input id="password" type="password" placeholder="password">
-            <button type="button" id="signin" disabled>signin</button>
-            <button type="button" id="signup">signup</button>
         </div>
         <div style="display: flex;">
-            <input id="mail_link_address" type="email" placeholder="email">
-            <button type="button" id="signup_mail_link" disabled>signup mail link</button>
+            <button type="button" id="signin_password" disabled>signin password</button>
+            <button type="button" id="signin_mail_link" disabled>signin mail link</button>
+            <button type="button" id="signup">signup</button>
         </div>
         <div id="signin_google">
             <button type="button" class="signin_provider" data-provider="google" data-action="popup" disabled>google popup</button>
@@ -100,8 +99,8 @@
     <div id="add_box">
         <div id="add_mail_password">
             <div style="display: flex;">
-                <input id="mail_password_address" type="email" placeholder="email">
-                <input id="mail_password_password" type="password" placeholder="password">
+                <input id="mail_password_address" type="email" placeholder="email" disabled>
+                <input id="mail_password_password" type="password" placeholder="password" disabled>
             </div>
             <div style="display: flex;">
                 <button type="button" class="add_provider" data-provider="password" data-action="" disabled>mail link add</button>
@@ -174,6 +173,11 @@
         firebase.auth().languageCode = 'ja'
         // firebase.auth().useDeviceLanguage()
 
+        test.addEventListener('click', event => {
+            const user = firebase.auth().currentUser
+            getSigninMethodsFromEmailAddress(event.target.value)
+        })
+
         /* 
          * sign up
          * サインアップ
@@ -195,7 +199,7 @@
          * サインイン
          *-------------------------------------------------------------------
          */
-        get('#signin').addEventListener('click', () => {
+        get('#signin_password').addEventListener('click', () => {
             const email = get('#email').value
             const password = get('#password').value
 
@@ -211,8 +215,8 @@
          * メールとパスワードでサインイン
          *-------------------------------------------------------------------
          */
-        get('#signup_mail_link').addEventListener('click', event => {
-            const email = get('#mail_link_address').value
+        get('#signin_mail_link').addEventListener('click', event => {
+            const email = get('#email').value
             firebase.auth().sendSignInLinkToEmail(email, {
                 // URL you want to redirect back to. The domain (www.example.com) for this
                 // URL must be whitelisted in the Firebase Console.
@@ -438,12 +442,11 @@
             }
             const email = get('#mail_password_address').value
             const password = get('#mail_password_password').value
-
             // get credential
             const credential = firebase.auth.EmailAuthProvider.credential(email, password)
             currentUser.linkAndRetrieveDataWithCredential(credential)
                 .then(result => {
-                    const token = result.credential.accessToken;
+                    const token = result.credential;
                     const user = result.user;
                     const credential = result.credential;
                     console.log(token)
@@ -509,7 +512,10 @@
                 getSigninMethodsFromEmailAddress(event.target.value)
                     .then(result => {
                         console.log(result)
-                        get('#signup_mail_link').disabled = result.hasMailLink
+                        // you can signin with password
+                        get('#signin_password').disabled = !result.hasPassword
+                        // you can signin with mail link
+                        get('#signin_mail_link').disabled = !result.hasMailLink
                     })
             }
         })
@@ -526,7 +532,7 @@
             changeUserInfo(user)
 
             if (user) {
-                console.log(user)
+
             } else {
 
             }
@@ -573,24 +579,28 @@
          */
         function changeUserInfo(user) {
             if (user) {
-                let providers = []
-                const methods = getSigninMethodsFromCurrentUser(user)
-                const methodObj = (Object.entries(methods).map(([key, value]) => ({ key, value })))
-                methodObj.forEach(provider => {
-                    if (provider.value == true) {
-                        providers.push(provider.key)
-                    }
-                });
-                get('.user_photo').src = user.photoURL || 'none'
-                get('.user_uid').textContent = user.uid || 'none'
-                get('.user_displayName').textContent = user.displayName || 'none'
-                get('.user_email').textContent = user.email || 'none'
-                get('.user_email_verified').textContent = user.emailVerified || 'none'
-                get('.user_creation_time').textContent = Date(user.metadata.creationTime) || 'none'
-                get('.user_last_signin_time').textContent = Date(user.metadata.lastSignInTime) || 'none'
-                get('.user_phone_number').textContent = user.phoneNumber || 'none'
-                get('.user_photo_url').textContent = user.photoURL || 'none'
-                get('.user_provider_data').textContent = providers || 'none'
+                getSigninMethodsFromEmailAddress()
+                    .then(providers => {
+                        let providerStrings = []
+                        Object.entries(providers).map(([key, value]) => ({ key, value })).forEach(provider => {
+                            if (provider.value == true) {
+                                providerStrings.push(provider.key)
+                            }
+                        })
+                        get('.user_photo').src = user.photoURL || '/images/profile_placeholder.png'
+                        get('.user_uid').textContent = user.uid || '---'
+                        get('.user_displayName').textContent = user.displayName || '---'
+                        get('.user_email').textContent = user.email || '---'
+                        get('.user_email_verified').textContent = user.emailVerified || '---'
+                        get('.user_creation_time').textContent = Date(user.metadata.creationTime) || '---'
+                        get('.user_last_signin_time').textContent = Date(user.metadata.lastSignInTime) || '---'
+                        get('.user_phone_number').textContent = user.phoneNumber || '---'
+                        get('.user_photo_url').textContent = user.photoURL || '---'
+                        get('.user_provider_data').textContent = providerStrings.join(', ') || '---'
+                    })
+                    .catch(error => {
+                        notice(info, error.code, error.message)
+                    })
             } else {
                 get('.user_photo').src = ''
                 get('.user_uid').textContent = '---'
@@ -616,97 +626,47 @@
             get('#password').value = ''
             get('#mail_password_address').value = ''
             get('#mail_password_password').value = ''
-            get('#mail_link_address').value = ''
 
             if (user) {
-                // show signout button
-                get('#signin').disabled = true
-                get('#signup_mail_link').disabled = true
                 get('#signout').disabled = false
-
-                // hide signin with provider
-                all('.signin_provider').forEach(element => {
-                    element.disabled = true
+                all('#signin_box .signin_provider').forEach(element => {
+                    element.disabeld = false
                 })
+                getSigninMethodsFromEmailAddress()
+                    .then(providers => {
+                        get('#mail_password_address').disabled = providers.hasPssword
+                        get('#mail_password_password').disabled = providers.hasPssword
+                        get('#add_mail_password .add_provider').disabled = providers.hasPssword
+                        get('#add_mail_password .remove_provider').disabled = !providers.hasPssword
 
-                // hide provider add
-                const methods = getSigninMethodsFromCurrentUser(user)
-                console.log(methods)
+                        all('#add_google .add_provider').forEach(element => {
+                            element.disabled = providers.hasGoogle
+                        })
+                        get('#add_google .remove_provider').disabled = !providers.hasGoogle
 
-                get('#mail_password_address').disabled = methods.hasPssword
-                get('#mail_password_password').disabled = methods.hasPssword
-                get('#add_mail_password .add_provider').disabled = methods.hasPssword
-                get('#add_mail_password .remove_provider').disabled = !methods.hasPssword
+                        all('#add_facebook .add_provider').forEach(element => {
+                            element.disabled = providers.hasFacebook
+                        })
+                        get('#add_facebook .remove_provider').disabled = !providers.hasFacebook
 
-                all('#add_google .add_provider').forEach(element => {
-                    element.disabled = methods.hasGoogle
-                })
-                get('#add_google .remove_provider').disabled = !methods.hasGoogle
+                        all('#add_github .add_provider').forEach(element => {
+                            element.disabled = providers.hasGithub
+                        })
+                        get('#add_github .remove_provider').disabled = !providers.hasGithub
 
-                all('#add_facebook .add_provider').forEach(element => {
-                    element.disabled = methods.hasFacebook
-                })
-                get('#add_facebook .remove_provider').disabled = !methods.hasFacebook
-
-                all('#add_github .add_provider').forEach(element => {
-                    element.disabled = methods.hasGithub
-                })
-                get('#add_github .remove_provider').disabled = !methods.hasGithub
-
-                all('#add_twitter .add_provider').forEach(element => {
-                    element.disabled = methods.hasTwitter
-                })
-                get('#add_twitter .remove_provider').disabled = !methods.hasTwitter
-
-                // location.href = 'index.html'
+                        all('#add_twitter .add_provider').forEach(element => {
+                            element.disabled = providers.hasTwitter
+                        })
+                        get('#add_twitter .remove_provider').disabled = !providers.hasTwitter
+                    })
             } else {
-                get('#signin').disabled = false
-                get('#signup_mail_link').disabled = false
                 get('#signout').disabled = true
-
-                all('.signin_provider').forEach(element => {
+                all('#signin_box .signin_provider').forEach(element => {
                     element.disabled = false
                 })
-
-                all('.add_provider').forEach(element => {
+                all('#add_box button, #add_box input').forEach(element => {
                     element.disabled = true
                 })
-
-                all('.remove_provider').forEach(element => {
-                    element.disabled = true
-                })
-            }
-        }
-
-        /* 
-         * function
-         * chack signin method from current user
-         *-------------------------------------------------------------------
-         */
-        function getSigninMethodsFromCurrentUser(user) {
-            if (user) {
-                const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
-                const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
-                let signInMethods = [];
-                user.providerData.forEach(value => {
-                    signInMethods.push(value.providerId)
-                })
-                return {
-                    hasPssword: signInMethods.indexOf(signinPassword) != -1,
-                    hasMailLink: signInMethods.indexOf(signinMailLink) != -1,
-                    hasGoogle: signInMethods.indexOf("google.com") != -1,
-                    hasFacebook: signInMethods.indexOf("facebook.com") != -1,
-                    hasGithub: signInMethods.indexOf("github.com") != -1,
-                    hasTwitter: signInMethods.indexOf("twitter.com") != -1
-                }
-            }
-            return {
-                hasPssword: false,
-                hasMailLink: false,
-                hasGoogle: false,
-                hasFacebook: false,
-                hasMailLink: false,
-                hasMailLink: false
             }
         }
 
@@ -715,32 +675,48 @@
          * chack signin method
          *-------------------------------------------------------------------
          */
-        function getSigninMethodsFromEmailAddress(emailAddress) {
-            return new Promise((resolve, reject) => {
-                firebase.auth().fetchSignInMethodsForEmail(emailAddress)
-                    .then(signInMethods => {
+        async function getSigninMethodsFromEmailAddress(emailAddress = null) {
+            const user = firebase.auth().currentUser
+            let result = {
+                hasPssword: false,
+                hasMailLink: false,
+                hasGoogle: false,
+                hasFacebook: false,
+                hasGithub: false,
+                hasTwitter: false
+            }
+            const email = user && user.email ? user.email : emailAddress
+
+            if (email) {
+                await firebase.auth().fetchSignInMethodsForEmail(email)
+                    .then(providers => {
                         const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
                         const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
-                        resolve({
-                            hasPssword: signInMethods.indexOf(signinPassword) != -1,
-                            hasMailLink: signInMethods.indexOf(signinMailLink) != -1,
-                            hasGoogle: signInMethods.indexOf("google.com") != -1,
-                            hasFacebook: signInMethods.indexOf("facebook.com") != -1,
-                            hasGithub: signInMethods.indexOf("github.com") != -1,
-                            hasTwitter: signInMethods.indexOf("twitter.com") != -1
-                        })
+                        result.hasPssword = providers.indexOf(signinPassword) != -1
+                        result.hasMailLink = providers.indexOf(signinMailLink) != -1
+                        result.hasGoogle = providers.indexOf("google.com") != -1
+                        result.hasFacebook = providers.indexOf("facebook.com") != -1
+                        result.hasGithub = providers.indexOf("github.com") != -1
+                        result.hasTwitter = providers.indexOf("twitter.com") != -1
                     })
                     .catch(error => {
-                        reject({
-                            hasPssword: false,
-                            hasMailLink: false,
-                            hasGoogle: false,
-                            hasFacebook: false,
-                            hasMailLink: false,
-                            hasMailLink: false
-                        })
+                        return error
                     })
-            });
+            }
+
+            if (user && !email) {
+                let providers = []
+                user.providerData.forEach(provider => {
+                    console.log('in')
+                    providers.push(provider.providerId)
+                })
+                result.providers.indexOf("google.com") != -1
+                result.providers.indexOf("facebook.com") != -1
+                result.providers.indexOf("github.com") != -1
+                result.providers.indexOf("twitter.com") != -1
+            }
+
+            return result
         }
 
         /* 
