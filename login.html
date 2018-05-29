@@ -41,14 +41,7 @@
             padding: .6rem;
         }
 
-        #add_google,
-        #add_facebook,
-        #add_github,
-        #add_twitter,
-        #signin_google,
-        #signin_facebook,
-        #signin_github,
-        #signin_twitter {
+        .flex {
             display: flex;
         }
 
@@ -73,28 +66,28 @@
 
     <div>sign</div>
     <div id="sign_box">
-        <div style="display: flex;">
+        <div class="flex">
             <input id="sign_email" type="email" placeholder="sign email" disabled>
             <input id="sign_password" type="password" placeholder="sign password" disabled>
         </div>
-        <div style="display: flex;">
+        <div class="flex">
             <button type="button" id="signin_password" disabled>signin password</button>
             <button type="button" id="signin_mail_link" disabled>signin mail link</button>
             <button type="button" id="signup" disabled>signup</button>
         </div>
-        <div id="signin_google">
+        <div id="signin_google" class="flex">
             <button type="button" class="signin_provider" data-provider="google" data-action="popup" disabled>google popup</button>
             <button type="button" class="signin_provider" data-provider="google" data-action="redirect" disabled>google redirect</button>
         </div>
-        <div id="signin_facebook">
+        <div id="signin_facebook" class="flex">
             <button type="button" class="signin_provider" data-provider="facebook" data-action="popup" disabled>facebook popup</button>
             <button type="button" class="signin_provider" data-provider="facebook" data-action="redirect" disabled>facebook redirect</button>
         </div>
-        <div id="signin_github">
+        <div id="signin_github" class="flex">
             <button type="button" class="signin_provider" data-provider="github" data-action="popup" disabled>github popup</button>
             <button type="button" class="signin_provider" data-provider="github" data-action="redirect" disabled>github redirect</button>
         </div>
-        <div id="signin_twitter">
+        <div id="signin_twitter" class="flex">
             <button type="button" class="signin_provider" data-provider="twitter" data-action="popup" disabled>twitter popup</button>
             <button type="button" class="signin_provider" data-provider="twitter" data-action="redirect" disabled>twitter redirect</button>
         </div>
@@ -102,28 +95,23 @@
 
     <div>resignin</div>
     <div id="resign_box">
-        <div style="display: flex;">
-            <input id="resignin_email" type="email" placeholder="resignin email" disabled>
+        <div class="flex">
             <input id="resignin_password" type="password" placeholder="resignin password" disabled>
-        </div>
-        <div style="display: flex;">
-            <button type="button" id="resignin_password" disabled>resignin password</button>
-            <button type="button" id="resignin_mail_link" disabled>resignin_ mail link</button>
             <button type="button" id="resignin" disabled>resignin</button>
         </div>
-        <div id="resignin_google">
+        <div id="resignin_google" class="flex">
             <button type="button" class="resignin_provider" data-provider="google" data-action="popup" disabled>resignin google popup</button>
             <button type="button" class="resignin_provider" data-provider="google" data-action="redirect" disabled>resignin google redirect</button>
         </div>
-        <div id="resignin_facebook">
+        <div id="resignin_facebook" class="flex">
             <button type="button" class="resignin_provider" data-provider="facebook" data-action="popup" disabled>resignin facebook popup</button>
             <button type="button" class="resignin_provider" data-provider="facebook" data-action="redirect" disabled>resignin facebook redirect</button>
         </div>
-        <div id="resignin_github">
+        <div id="resignin_github" class="flex">
             <button type="button" class="resignin_provider" data-provider="github" data-action="popup" disabled>resignin github popup</button>
             <button type="button" class="resignin_provider" data-provider="github" data-action="redirect" disabled>resignin github redirect</button>
         </div>
-        <div id="resignin_twitter">
+        <div id="resignin_twitter" class="flex">
             <button type="button" class="resignin_provider" data-provider="twitter" data-action="popup" disabled>resignin twitter popup</button>
             <button type="button" class="resignin_provider" data-provider="twitter" data-action="redirect" disabled>resignin twitter redirect</button>
         </div>
@@ -132,31 +120,31 @@
     <div>add sign in provider</div>
     <div id="add_provider">
         <div id="add_provider_mail_password">
-            <div style="display: flex;">
+            <div class="flex">
                 <input id="add_provider_mail" type="email" placeholder="email" disabled>
                 <input id="add_provider_password" type="password" placeholder="password" disabled>
             </div>
-            <div style="display: flex;">
-                <button type="button" class="add_provider" data-provider="password" data-action="" disabled>mail link add</button>
+            <div class="flex">
+                <button type="button" class="add_provider" disabled>mail link add</button>
                 <button type="button" class="remove_provider" data-provider="password" data-action="" disabled>mail link remove</button>
             </div>
         </div>
-        <div id="add_google" style="display: flex;">
+        <div id="add_google" class="flex">
             <button type="button" class="add_provider" data-provider="google.com" data-action="popup" disabled>google popup</button>
             <button type="button" class="add_provider" data-provider="google.com" data-action="redirect" disabled>google redirect</button>
             <button type="button" class="remove_provider" data-provider="google.com" data-action="redirect" disabled>google remove</button>
         </div>
-        <div id="add_facebook" style="display: flex;">
+        <div id="add_facebook" class="flex">
             <button type="button" class="add_provider" data-provider="facebook.com" data-action="popup" disabled>facebook popup</button>
             <button type="button" class="add_provider" data-provider="facebook.com" data-action="redirect" disabled>facebook redirect</button>
             <button type="button" class="remove_provider" data-provider="facebook.com" data-action="redirect" disabled>facebook remove</button>
         </div>
-        <div id="add_github" style="display: flex;">
+        <div id="add_github" class="flex">
             <button type="button" class="add_provider" data-provider="github.com" data-action="popup" disabled>github popup</button>
             <button type="button" class="add_provider" data-provider="github.com" data-action="redirect" disabled>github redirect</button>
             <button type="button" class="remove_provider" data-provider="github.com" data-action="redirect" disabled>github remove</button>
         </div>
-        <div id="add_twitter" style="display: flex;">
+        <div id="add_twitter" class="flex">
             <button type="button" class="add_provider" data-provider="twitter.com" data-action="popup" disabled>twitter popup</button>
             <button type="button" class="add_provider" data-provider="twitter.com" data-action="redirect" disabled>twitter redirect</button>
             <button type="button" class="remove_provider" data-provider="twitter.com" data-action="redirect" disabled>twitter remove</button>
@@ -166,27 +154,26 @@
 
     <div>update user proparty</div>
     <div id="update_box">
-        <div style="display: flex;">
+        <div class="flex">
             <input type="text" id="update_display_name" placeholder="display name">
             <input type="text" id="update_photo_url" placeholder="photo url">
             <button type="button" id="updata_dysplay_name_and_photo_url">update display name and photo url</button>
         </div>
 
-        <div style="display: flex;">
+        <div class="flex">
             <input type="text" id="update_email_address" placeholder="update email address">
             <button type="button" id="update_email">update email</button>
-            <button type="button" id="reauth">reauth</button>
         </div>
 
-        <div style="display: flex;">
+        <div class="flex">
             <button type="button" id="send_email_verification">send email verification</button>
         </div>
 
-        <div style="display: flex;">
+        <div class="flex">
             <button type="button" id="update_password">update password</button>
         </div>
 
-        <div style="display: flex;">
+        <div class="flex">
             <input type="text" id="to_email_address" placeholder="to email address">
             <button type="button" id="send_password_reset_email">send password reset email</button>
         </div>
@@ -263,42 +250,6 @@
                         notice(info, error.code, error.message)
                     });
             }
-        })
-
-        // 再サインイン
-        get('#reauth').addEventListener('click', event => {
-            const user = firebase.auth().currentUser;
-            if (!user) {
-                return
-            }
-            var credential;
-            // https://firebase.google.com/docs/reference/js/firebase.User#reauthenticateWithRedirect
-            // reauthenticateWithCredential 
-            // reauthenticateWithPhoneNumber 
-            // reauthenticateWithPopup 
-            // reauthenticateWithRedirect 
-            // reauthenticateWithRedirect 
-
-            // // Prompt the user to re-provide their sign-in credentials
-            // credential = firebase.auth.EmailAuthProvider.credential(
-            //     user.email,
-            //     userProvidedPassword
-            // );
-            // user.reauthenticateWithCredential(credential)
-            //     .then(result => {
-            //         alert('in!')
-            //     })
-            //     .catch(error => {
-            //         console.log(error)
-            //     })
-
-            user.reauthenticateWithRedirect(new firebase.auth.GoogleAuthProvider())
-                .then(result => {
-                    notice(info, 'info', 'user resignin!')
-                })
-                .catch(error => {
-                    notice(info, error.code, error.message)
-                })
         })
 
         // Eメールのアップデート
@@ -410,7 +361,10 @@
             const password = get('#sign_password').value
             // sign up
             firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(user => { })
+                .then(user => {
+                    console.log('メールとパスワードでサインアップ！')
+                    console.log(user)
+                })
                 .catch(error => {
                     notice(info, error.code, error.message)
                 })
@@ -418,7 +372,7 @@
 
         /* 
          * sign in
-         * サインイン
+         * メールとパスワードでサインイン
          *-------------------------------------------------------------------
          */
         get('#signin_password').addEventListener('click', () => {
@@ -435,8 +389,8 @@
         })
 
         /* 
-         * signin with mail-password
-         * メールとパスワードでサインイン
+         * signin with mail-link
+         * メールリンクでサインイン
          *-------------------------------------------------------------------
          */
         get('#signin_mail_link').addEventListener('click', event => {
@@ -461,14 +415,13 @@
         })
 
         /* 
-         * receive then signin with mail-password
-         * メールとパスワードでサインインした場合の受け
+         * receive then signin with mail-link
+         * メールリンクでサインインした場合の受け
          *-------------------------------------------------------------------
          */
-
-        // Confirm the link is a sign-in with email link.
         if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
 
+            // Confirm the link is a sign-in with email link.
             let emailForSignIn = window.localStorage.getItem('emailForSignIn');
 
             // if emailForSignIn is not in localstorage, ask email to user
@@ -496,7 +449,6 @@
                     console.log(operationType)
                     console.log(token)
                     console.log(user)
-                    console.log(credential)
                 })
                 .catch(error => {
                     notice(info, error.code, error.message)
@@ -508,8 +460,8 @@
          * ソーシャルメディアプロバイダでサインイン
          *-------------------------------------------------------------------
          */
-        all('.signin_provider').forEach(signinProvider => {
-            signinProvider.addEventListener('click', event => {
+        all('.signin_provider').forEach(element => {
+            element.addEventListener('click', event => {
                 const target = event.target.dataset
                 let provider = null
                 switch (target.provider) {
@@ -565,7 +517,6 @@
                             console.log(operationType)
                             console.log(token)
                             console.log(user)
-                            console.log(credential)
                         })
                         .catch(error => {
                             notice(info, error.code, error.message)
@@ -623,7 +574,7 @@
                             console.log(operationType)
                             console.log(token)
                             console.log(user)
-                            console.log(credential)
+                            changeUi(user)
                         })
                         .catch(error => {
                             if (error.credential) {
@@ -643,16 +594,92 @@
         })
 
         /* 
+         * resign in with password
+         * パスワードで再サインイン
+         * https://firebase.google.com/docs/reference/js/firebase.User#reauthenticateWithRedirect
+         *-------------------------------------------------------------------
+         */
+         get('#resignin').addEventListener('click', event => {
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                return
+            }
+            const password = get('#resignin_password').value
+            credential = firebase.auth.EmailAuthProvider.credential(user.email, password)
+            user.reauthenticateWithCredential(credential)
+                .then(result => {
+                    notice(info, 'info', 'user resignin!')
+                })
+                .catch(error => {
+                    notice(info, error.code, error.message)
+                })
+        })
+
+        /* 
+         * resign in with provider
+         * プロバイダで再サインイン
+         * https://firebase.google.com/docs/reference/js/firebase.User#reauthenticateWithRedirect
+         *-------------------------------------------------------------------
+         */
+        all('.resignin_provider').forEach(element => {
+            element.addEventListener('click', event => {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    return
+
+                }
+                const target = event.target.dataset
+                let provider = null
+                switch (target.provider) {
+                    case 'google':
+                        provider = new firebase.auth.GoogleAuthProvider()
+                        break;
+
+                    case 'facebook':
+                        provider = new firebase.auth.FacebookAuthProvider();
+                        break;
+
+                    case 'github':
+                        provider = new firebase.auth.GithubAuthProvider();
+                        break;
+
+                    case 'twitter':
+                        provider = new firebase.auth.TwitterAuthProvider();
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (target.action == 'popup') {
+                    user.reauthenticateWithPopup(provider)
+                        .then(result => {
+                            notice(info, 'info', 'user resignin!')
+                        })
+                        .catch(error => {
+                            notice(info, error.code, error.message)
+                        })
+                }
+
+                if (target.action == 'redirect') {
+                    user.reauthenticateWithRedirect(provider)
+                }
+            })
+        })
+
+        /* 
          * recieve then signin with social media provider
          * recieve then sdd social media provider
-         * ソーシャルメディアプロバイダでサインインした場合の受け
-         * ソーシャルメディアプロバイダ追加した場合の受け
+         * ソーシャルメディアプロバイダでリダイレクトサインインした場合の受け
+         * ソーシャルメディアプロバイダリダイレクト追加した場合の受け
+         * プロバイダでリダイレクト再サインインした場合の受け
          *-------------------------------------------------------------------
          */
         firebase.auth().getRedirectResult()
             .then(result => {
                 if (result.credential) {
-                    console.log('ソーシャルメディアプロバイダでサインイン\nソーシャルメディアプロバイダ追加')
+                    console.log('リダイレクト受け')
+                    console.log(result)
                     const isNewUser = result.additionalUserInfo.isNewUser
                     const providerId = result.additionalUserInfo.providerId
                     const operationType = result.operationType
@@ -665,7 +692,6 @@
                     console.log(operationType)
                     console.log(token)
                     console.log(user)
-                    console.log(credential)
                 }
             })
             .catch(error => {
@@ -707,7 +733,6 @@
                     console.log(operationType)
                     console.log(token)
                     console.log(user)
-                    console.log(credential)
                     changeUi(result.user)
                     changeUserInfo(result.user)
                 })
@@ -759,23 +784,6 @@
         })
 
         /* 
-         * chack signin type
-         * いんぷっとのとこ
-         *-------------------------------------------------------------------
-         */
-        get('#sign_email').addEventListener('keyup', event => {
-            if (!firebase.auth().currentUser) {
-                getSigninMethodsFromEmailAddress(event.target.value)
-                    .then(result => {
-                        // you can signin with password
-                        get('#signin_password').disabled = !result.hasPassword
-                        // you can signin with mail link
-                        get('#signin_mail_link').disabled = !result.hasMailLink
-                    })
-            }
-        })
-
-        /* 
          * change Auth state
          * AUTHステータス変更時のイベント
          *-------------------------------------------------------------------
@@ -790,6 +798,23 @@
 
             } else {
 
+            }
+        })
+
+        /* 
+         * chack signin type
+         * いんぷっとのとこ
+         *-------------------------------------------------------------------
+         */
+        get('#sign_email').addEventListener('keyup', event => {
+            if (!firebase.auth().currentUser) {
+                getSigninMethodsFromEmailAddress(event.target.value)
+                    .then(result => {
+                        // you can signin with password
+                        get('#signin_password').disabled = !result.hasPassword
+                        // you can signin with mail link
+                        get('#signin_mail_link').disabled = !result.hasMailLink
+                    })
             }
         })
 
@@ -829,7 +854,7 @@
 
         /* 
          * function
-         * for change ui
+         * for change info
          *-------------------------------------------------------------------
          */
         function changeUserInfo(user) {
@@ -903,10 +928,12 @@
 
                 getSigninMethodsFromEmailAddress()
                     .then(providers => {
-                        get('#add_provider_mail').disabled = providers.hasPssword
-                        get('#add_provider_password').disabled = providers.hasPssword
-                        get('#add_provider_mail_password .add_provider').disabled = providers.hasPssword
-                        get('#add_provider_mail_password .remove_provider').disabled = !providers.hasPssword
+                        // add provider
+
+                        get('#add_provider_mail').disabled = providers.hasPassword
+                        get('#add_provider_password').disabled = providers.hasPassword
+                        get('#add_provider_mail_password .add_provider').disabled = providers.hasPassword
+                        get('#add_provider_mail_password .remove_provider').disabled = !providers.hasPassword
                         all('#add_google .add_provider').forEach(element => {
                             element.disabled = providers.hasGoogle
                         })
@@ -926,6 +953,21 @@
                             element.disabled = providers.hasTwitter
                         })
                         get('#add_twitter .remove_provider').disabled = !providers.hasTwitter
+                        // resinin
+                        get('#resignin_password').disabled = !providers.hasPassword
+                        get('#resignin').disabled = !providers.hasPassword
+                        all('#resignin_google .resignin_provider').forEach(element => {
+                            element.disabled = !providers.hasGoogle
+                        })
+                        all('#resignin_facebook .resignin_provider').forEach(element => {
+                            element.disabled = !providers.hasFacebook
+                        })
+                        all('#resignin_github .resignin_provider').forEach(element => {
+                            element.disabled = !providers.hasGithub
+                        })
+                        all('#resignin_twitter .resignin_provider').forEach(element => {
+                            element.disabled = !providers.hasTwitter
+                        })
                     })
             } else {
                 get('#signout').disabled = true
@@ -958,14 +1000,13 @@
         async function getSigninMethodsFromEmailAddress(emailAddress = null) {
             const user = firebase.auth().currentUser
             let result = {
-                hasPssword: false,
+                hasPassword: false,
                 hasMailLink: false,
                 hasGoogle: false,
                 hasFacebook: false,
                 hasGithub: false,
                 hasTwitter: false
             }
-            console.log(result)
             const email = user && user.email ? user.email : emailAddress
             if (email) {
                 await firebase.auth().fetchSignInMethodsForEmail(email)
@@ -974,7 +1015,7 @@
                         // 両方のときはメールアドレスを追加？
                         const signinPassword = firebase.auth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD
                         const signinMailLink = firebase.auth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
-                        result.hasPssword = providers.includes(signinPassword)
+                        result.hasPassword = providers.includes(signinPassword)
                         result.hasMailLink = providers.includes(signinMailLink)
                     })
                     .catch(error => {
