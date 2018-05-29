@@ -62,6 +62,7 @@
 
     <div>
         <img class="user_photo" height="30">
+        <span class="user_display_name"></span>
         <button type="button" id="signout" disabled>signout</button>
         <div id="info"></div>
     </div>
@@ -130,13 +131,27 @@
         </div>
     </div>
 
-    <button type="button" id="test">test</button>
+    <div style="display: flex;">
+        <input type="text" id="update_display_name">
+        <input type="text" id="update_photo_url">
+        <button type="button" id="updata_dysplay_name_and_photo_url">update display name and photo url</button>
+    </div>
+
+    <div style="display: flex;">
+        <input type="text" id="update_email_address">
+        <button type="button" id="update_email">update email</button>
+        <button type="button" id="reauth">reauth</button>
+    </div>
+
+    <div style="display: flex;">
+        <button type="button" id="send_email_verification">send email verification</button>
+    </div>
 
     <div class="user_box">
         <div class="user_title">uid</div>
         <div class="user_value user_uid"></div>
         <div class="user_title">user_displayName</div>
-        <div class="user_value user_displayName"></div>
+        <div class="user_value user_display_name"></div>
         <div class="user_title">user_email</div>
         <div class="user_value user_email"></div>
         <div class="user_title">user_email_verified</div>
@@ -167,16 +182,107 @@
 
         // elements
         const info = get('#info')
-        const test = get('#test')
 
         // Language setting
         firebase.auth().languageCode = 'ja'
         // firebase.auth().useDeviceLanguage()
 
-        test.addEventListener('click', event => {
-            const user = firebase.auth().currentUser
-            getSigninMethodsFromEmailAddress(event.target.value)
+
+
+        // ディスプレイネームとフォトURLの更新
+        get('#updata_dysplay_name_and_photo_url').addEventListener('click', event => {
+            var user = firebase.auth().currentUser;
+            if (!user) {
+                return
+            }
+
+            let updateData = {}
+            if (get('#update_display_name').value) {
+                updateData.displayName = get('#update_display_name').value
+            }
+            if (get('#update_photo_url').value) {
+                updateData.photoURL = get('#update_photo_url').value
+            }
+
+            if (updateData) {
+                user.updateProfile(updateData)
+                    .then(result => {
+                        all('.user_display_name').forEach(element => {
+                            element.textContent = updateData.displayName
+                        })
+                        all('.user_photo').forEach(element => {
+                            element.src = updateData.photoURL
+                        })
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    });
+            }
         })
+
+        // 再サインイン
+        get('#reauth').addEventListener('click', event => {
+            var user = firebase.auth().currentUser;
+            if (!user) {
+                return
+            }
+            var credential;
+            // https://firebase.google.com/docs/reference/js/firebase.User#reauthenticateWithRedirect
+            // reauthenticateWithCredential 
+            // reauthenticateWithPhoneNumber 
+            // reauthenticateWithPopup 
+            // reauthenticateWithRedirect 
+            // reauthenticateWithRedirect 
+
+            // // Prompt the user to re-provide their sign-in credentials
+            // credential = firebase.auth.EmailAuthProvider.credential(
+            //     user.email,
+            //     userProvidedPassword
+            // );
+            // user.reauthenticateWithCredential(credential)
+            //     .then(result => {
+            //         alert('in!')
+            //     })
+            //     .catch(error => {
+            //         console.log(error)
+            //     })
+
+            user.reauthenticateWithRedirect(new firebase.auth.GoogleAuthProvider())
+                .then(result => {
+                    alert('in!')
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        })
+
+        // Eメールのアップデート
+        get('#update_email').addEventListener('click', event => {
+            var user = firebase.auth().currentUser;
+            if (!user) {
+                return
+            }
+
+            const email = get('#update_email_address').value
+            if (email) {
+                user.updateEmail(email)
+                    .then(result => {
+                        all('.user_email').forEach(element => {
+                            element.textContent = email
+                        })
+                    })
+                    .catch(error => {
+                        notice(info, error.code, error.message)
+                    });
+            }
+        })
+
+        // 確認メール送信
+        get('#send_email_verification').addEventListener(event => {
+            alert('on')
+        })
+
+
 
         /* 
          * sign up
@@ -204,7 +310,9 @@
             const password = get('#password').value
 
             firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(user => { })
+                .then(user => {
+
+                })
                 .catch(error => {
                     notice(info, error.code, error.message)
                 })
@@ -259,16 +367,20 @@
                     window.localStorage.removeItem('emailForSignIn');
 
                     // result
+                    console.log('メールとパスワードでサインイン')
                     const isNewUser = result.additionalUserInfo.isNewUser
                     const providerId = result.additionalUserInfo.providerId
-                    const credential = result.credential
                     const operationType = result.operationType
                     const user = result.user
+                    const credential = result.credential;
+                    const token = result.credential.accessToken;
                     console.log(isNewUser)
                     console.log(providerId)
                     console.log(credential)
                     console.log(operationType)
+                    console.log(token)
                     console.log(user)
+                    console.log(credential)
                 })
                 .catch(error => {
                     notice(info, error.code, error.message)
@@ -324,10 +436,17 @@
                 if (target.action == 'popup') {
                     firebase.auth().signInWithPopup(provider)
                         .then(result => {
-                            // This gives you a Google Access Token. You can use it to access the Google API.
-                            const token = result.credential.accessToken;
-                            const user = result.user;
+                            console.log('ソーシャルメディアプロバイダでサインイン')
+                            const isNewUser = result.additionalUserInfo.isNewUser
+                            const providerId = result.additionalUserInfo.providerId
+                            const operationType = result.operationType
+                            const user = result.user
                             const credential = result.credential;
+                            const token = result.credential.accessToken;
+                            console.log(isNewUser)
+                            console.log(providerId)
+                            console.log(credential)
+                            console.log(operationType)
                             console.log(token)
                             console.log(user)
                             console.log(credential)
@@ -375,15 +494,20 @@
                 if (target.action == 'popup') {
                     currentUser.linkWithPopup(provider)
                         .then(result => {
-                            const token = result.credential.accessToken;
-                            const user = result.user;
+                            console.log('ソーシャルメディアプロバイダ追加')
+                            const isNewUser = result.additionalUserInfo.isNewUser
+                            const providerId = result.additionalUserInfo.providerId
+                            const operationType = result.operationType
+                            const user = result.user
                             const credential = result.credential;
+                            const token = result.credential.accessToken;
+                            console.log(isNewUser)
+                            console.log(providerId)
+                            console.log(credential)
+                            console.log(operationType)
                             console.log(token)
                             console.log(user)
                             console.log(credential)
-
-                            changeUi(user)
-                            changeUserInfo(user)
                         })
                         .catch(error => {
                             if (error.credential) {
@@ -412,9 +536,17 @@
         firebase.auth().getRedirectResult()
             .then(result => {
                 if (result.credential) {
-                    const token = result.credential.accessToken;
-                    const user = result.user;
+                    console.log('ソーシャルメディアプロバイダでサインイン\nソーシャルメディアプロバイダ追加')
+                    const isNewUser = result.additionalUserInfo.isNewUser
+                    const providerId = result.additionalUserInfo.providerId
+                    const operationType = result.operationType
+                    const user = result.user
                     const credential = result.credential;
+                    const token = result.credential.accessToken;
+                    console.log(isNewUser)
+                    console.log(providerId)
+                    console.log(credential)
+                    console.log(operationType)
                     console.log(token)
                     console.log(user)
                     console.log(credential)
@@ -446,9 +578,17 @@
             const credential = firebase.auth.EmailAuthProvider.credential(email, password)
             currentUser.linkAndRetrieveDataWithCredential(credential)
                 .then(result => {
-                    const token = result.credential;
-                    const user = result.user;
+                    console.log('メイルパスワードプロバイダ追加')
+                    const isNewUser = result.additionalUserInfo.isNewUser
+                    const providerId = result.additionalUserInfo.providerId
+                    const operationType = result.operationType
+                    const user = result.user
                     const credential = result.credential;
+                    const token = result.credential.accessToken;
+                    console.log(isNewUser)
+                    console.log(providerId)
+                    console.log(credential)
+                    console.log(operationType)
                     console.log(token)
                     console.log(user)
                     console.log(credential)
@@ -589,7 +729,9 @@
                         })
                         get('.user_photo').src = user.photoURL || '/images/profile_placeholder.png'
                         get('.user_uid').textContent = user.uid || '---'
-                        get('.user_displayName').textContent = user.displayName || '---'
+                        all('.user_display_name').forEach(element => {
+                            element.textContent = user.displayName || '---'
+                        })
                         get('.user_email').textContent = user.email || '---'
                         get('.user_email_verified').textContent = user.emailVerified || '---'
                         get('.user_creation_time').textContent = Date(user.metadata.creationTime) || '---'
@@ -604,7 +746,7 @@
             } else {
                 get('.user_photo').src = ''
                 get('.user_uid').textContent = '---'
-                get('.user_displayName').textContent = '---'
+                get('.user_display_name').textContent = '---'
                 get('.user_email').textContent = '---'
                 get('.user_email_verified').textContent = '---'
                 get('.user_creation_time').textContent = '---'
@@ -632,9 +774,9 @@
                 get('#signout').disabled = false
                 // サインアウト閉める
                 get('#signup').disabled = true
-                // プロバイダサインインすべて開ける
+                // プロバイダサインインすべて閉める
                 all('#signin_box .signin_provider').forEach(element => {
-                    element.disabled = false
+                    element.disabled = true
                 })
                 // メールインプット閉める
                 get('#email').disabled = true
@@ -671,6 +813,7 @@
             } else {
                 get('#signout').disabled = true
                 get('#signup').disabled = false
+                // プロバイダサインインすべて開ける
                 all('#signin_box .signin_provider').forEach(element => {
                     element.disabled = false
                 })
@@ -680,9 +823,9 @@
                 get('#password').disabled = false
 
                 // アド
-                // all('#add_box button, #add_box input').forEach(element => {
-                //     element.disabled = true
-                // })
+                all('#add_box button, #add_box input').forEach(element => {
+                    element.disabled = true
+                })
             }
         }
 
