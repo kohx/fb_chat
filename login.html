@@ -174,8 +174,10 @@
         </div>
 
         <div class="flex">
-            <input type="text" id="to_email_address" placeholder="to email address">
             <button type="button" id="send_password_reset_email">send password reset email</button>
+        </div>
+        <div class="flex">
+            <button type="button" id="delete_user">delete user</button>
         </div>
     </div>
 
@@ -327,14 +329,8 @@
                 return
             }
 
-            // set to email address
-            let emailAddress = get('#to_email_address').value
-            if (!emailAddress && user.email) {
-                emailAddress = user.email
-            }
-
-            if (!emailAddress) {
-                notice(info, 'error', 'input email address!')
+            if (!user.email) {
+                notice(info, 'error', 'set email address first!')
                 return
             }
 
@@ -347,9 +343,8 @@
                 })
                 .catch(error => {
                     notice(info, error.code, error.message)
-                });
+                })
         })
-
 
         /* 
          * sign up
@@ -599,7 +594,7 @@
          * https://firebase.google.com/docs/reference/js/firebase.User#reauthenticateWithRedirect
          *-------------------------------------------------------------------
          */
-         get('#resignin').addEventListener('click', event => {
+        get('#resignin').addEventListener('click', event => {
             const user = firebase.auth().currentUser;
             if (!user) {
                 return
@@ -679,7 +674,6 @@
             .then(result => {
                 if (result.credential) {
                     console.log('リダイレクト受け')
-                    console.log(result)
                     const isNewUser = result.additionalUserInfo.isNewUser
                     const providerId = result.additionalUserInfo.providerId
                     const operationType = result.operationType
@@ -781,6 +775,28 @@
                 .catch(error => {
                     notice(info, error.code, error.message)
                 })
+        })
+
+        /* 
+         * delete user
+         * ユーザーを削除する
+         *-------------------------------------------------------------------
+         */
+         get('#delete_user').addEventListener('click', event => {
+            let deleteApproval = window.confirm('Do you delete account?');
+
+            if (deleteApproval) {
+                const user = firebase.auth().currentUser;
+
+                user.delete()
+                    .then(result => {
+                        console.log(result)
+                        notice(info, 'info', 'account deleted!')
+                    })
+                    .catch(error => {
+                        notice(info, error.code, error.message)
+                    })
+            }
         })
 
         /* 
