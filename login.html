@@ -253,67 +253,80 @@
             confirmation: null,
             countryCode: null,
             rawNumber: null,
-            formadNumber: null,
+            formedNumber: null,
         }
 
+        /* 
+         * create captcha
+         * 確認コードをSMSに送る
+         *-------------------------------------------------------------------
+         */
         get('#show_phone_sign').addEventListener('click', event => {
             phoneObject.verifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
                 'size': 'normal', // normal, invisible
+                //  The name of your callback function, executed when the user submits a successful response.
+                // The g-recaptcha-response token is passed to your callback.
                 'callback': response => {
                     phoneObject.countryCode = get('#country_code').value
                     phoneObject.rawNumber = get('#phone_number').value
-                    phoneObject.formadNumber = checkAndformatPhoneNumber(phoneObject.countryCode, phoneObject.rawNumber)
-                    console.log(phoneObject.formadNumber)
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                    onSignInSubmit(phoneObject.formadNumber);
+                    phoneObject.formedNumber = checkAndformatPhoneNumber(phoneObject.countryCode, phoneObject.rawNumber)
                 },
+                // The name of your callback function, executed when the reCAPTCHA response expires and the user needs to re-verify.
+                // Response expired. Ask user to solve reCAPTCHA again.
                 'expired-callback': response => {
-                    // Response expired. Ask user to solve reCAPTCHA again.
-                    alert('expired!')
-                }
+                    notice(info, 'info', 'captcha expired!')
+                },
+                // Optional. The name of your callback function,
+                // executed when reCAPTCHA encounters an error (usually network connectivity)
+                // and cannot continue until connectivity is restored.
+                // If you specify a function here, you are responsible for informing the user that they should retry.
+                'error-callback': response => { },
+                'theme': 'dark'
             })
 
+            // render captcha
             phoneObject.verifier.render()
                 .then(widgetId => {
                     phoneObject.widgetId = widgetId;
-                    console.log(widgetId)
+                    console.log(phoneObject)
                 });
 
         })
 
-        function onSignInSubmit(formedNumber) {
+        /* 
+         * send verfier sms
+         * 確認コードをSMSに送る
+         *-------------------------------------------------------------------
+         */
+        get('#send_verify').addEventListener('click', event => {
             // get recaptcha response
             var recaptchaResponse = grecaptcha.getResponse(phoneObject.widgetId)
-            console.log(recaptchaResponse)
-            const appVerifier = phoneObject.verifier;
-            firebase.auth().signInWithPhoneNumber(formedNumber, appVerifier)
-                .then(function (confirmationResult) {
+
+            // reCAPTCHA solved, allow signInWithPhoneNumber.
+            firebase.auth().signInWithPhoneNumber(phoneObject.formedNumber, phoneObject.verifier)
+                .then(confirmationResult => {
                     // SMS sent. Prompt user to type the code from the message,
                     // then sign the user in with confirmationResult.confirm(code).
                     phoneObject.confirmation = confirmationResult;
-                    console.log(confirmationResult)
+
+                    // reset captcha
+                    get('#recaptcha-container').innerHTML = ''
                 })
-                .catch(function (error) {
-                    // Error; SMS not sent
-                    alert('error!')
-                    console.log(error)
+                .catch(error => {
 
                     // signInWithPhoneNumber の結果がエラーであった場合は、ユーザーが再試行できるように reCAPTCHA をリセットします
-                    // grecaptcha.reset(phoneObject.widgetId);
+                    grecaptcha.reset(phoneObject.widgetId);
 
-                    // // Or, if you haven't stored the widget ID:
+                    // Or, if you haven't stored the widget ID:
                     // phoneObject.verifier.render().then(function (widgetId) {
                     //     grecaptcha.reset(widgetId);
                     // })
                 })
-        }
-
-        get('#send_verify').addEventListener('click', event => {
-            alert('send')
         })
 
         get('#cancel_verify').addEventListener('click', event => {
-            alert('cancel')
+            // reset captcha
+            get('#recaptcha-container').innerHTML = ''
         })
 
         /* 
@@ -325,12 +338,9 @@
             var verificationCode = get('#code_from_sms').value;
             phoneObject.confirmation.confirm(verificationCode)
                 .then(result => {
-                    // User signed in successfully.
                     checkSigninResult(result)
                 })
                 .catch(function (error) {
-                    console.log(error)
-                    // User couldn't sign in (bad verification code?)
                     notice(info, error.code, error.message)
                 });
         })
@@ -1195,13 +1205,13 @@
                 return
             }
 
-            const formadNumber = code + number.slice(1)
+            const formedNumber = code + number.slice(1)
             const formadReg = /^\(*\+*[1-9]{0,3}\)*-*[1-9]{0,3}[-. /]*\(*[2-9]\d{2}\)*[-. /]*\d{3}[-. /]*\d{4} *e*x*t*\.* *\d{0,4}$/
-            if (!formadNumber.match(formadReg)) {
+            if (!formedNumber.match(formadReg)) {
                 notice(info, 'error', 'phone number done not match format!')
                 return
             }
-            return formadNumber
+            return formedNumber
         }
         /* 
          * function
