@@ -179,6 +179,27 @@
         <div class="flex">
             <button type="button" id="delete_user">delete user</button>
         </div>
+
+
+        <div class="flex">
+            <input type="text" id="international_code" value="+81">
+            <input type="text" id="phone_number" value="08037870000">
+        </div>
+        <div class="flex">
+                <button type="button" id="show_phone_sign">show phone sign</button>
+        </div>
+        <div class="flex">
+            <div id="sign-in-button"></div>
+            <div id="recaptcha-container"></div>
+        </div>
+        <div class="flex">
+                <button type="button" id="send_verify">send verify</button>
+                <button type="button" id="cancel_verify">cancel verify</button>
+        </div>
+        <div class="flex">
+            <input type="text" id="code_from_sms">
+            <button id="phone_signin">phone signin</button>
+        </div>
     </div>
 
     <div class="user_box">
@@ -220,6 +241,117 @@
         // Language setting
         firebase.auth().languageCode = 'ja'
         // firebase.auth().useDeviceLanguage()
+
+
+
+
+
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+        // phone
+        let phoneObject = {
+            verifier: null,
+            widgetId: null,
+            code: null,
+            number: null,
+        }
+
+        get('#show_phone_sign').addEventListener('click', event => {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'normal', // normal, invisible
+                'callback': response => {
+                    const internationalCode = get('#international_code').value
+                    const phoneNumber = get('#phone_number').value
+                    const formedNumber = checkAndformatPhoneNumber(internationalCode, phoneNumber)
+                    console.log(formedNumber)
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                    onSignInSubmit(formedNumber);
+                },
+                'expired-callback': response => {
+                    // Response expired. Ask user to solve reCAPTCHA again.
+                    alert('expired!')
+                }
+            })
+
+            window.recaptchaVerifier.render()
+                .then(widgetId => {
+                    window.recaptchaWidgetId = widgetId;
+                    console.log(widgetId)
+                });
+
+        })
+
+        function onSignInSubmit(formedNumber) {
+            // get recaptcha response
+            var recaptchaResponse = grecaptcha.getResponse(window.recaptchaWidgetId)
+            console.log(recaptchaResponse)
+            const appVerifier = window.recaptchaVerifier;
+
+            firebase.auth().signInWithPhoneNumber(formedNumber, appVerifier)
+                .then(function (confirmationResult) {
+                    // SMS sent. Prompt user to type the code from the message,
+                    // then sign the user in with confirmationResult.confirm(code).
+                    window.confirmationResult = confirmationResult;
+                    console.log(confirmationResult)
+                })
+                .catch(function (error) {
+                    // Error; SMS not sent
+                    alert('error!')
+                    console.log(error)
+
+                    // signInWithPhoneNumber の結果がエラーであった場合は、ユーザーが再試行できるように reCAPTCHA をリセットします
+                    // grecaptcha.reset(window.recaptchaWidgetId);
+
+                    // // Or, if you haven't stored the widget ID:
+                    // window.recaptchaVerifier.render().then(function (widgetId) {
+                    //     grecaptcha.reset(widgetId);
+                    // })
+                })
+        }
+
+        get('#send_verify').addEventListener('click', event => {
+            alert('send')
+        })
+
+        get('#cancel_verify').addEventListener('click', event => {
+            alert('cancel')
+        })
+
+        /* 
+         * signin phone number
+         * 電話番号でサインイン
+         *-------------------------------------------------------------------
+         */
+        get('#phone_signin').addEventListener('click', evetnt => {
+            var verificationCode = get('#code_from_sms').value;
+            window.confirmationResult.confirm(verificationCode)
+                .then(result => {
+                    // User signed in successfully.
+                    // result
+                    console.log('メールとパスワードでサインイン')
+                    console.log(result)
+                    const isNewUser = result.additionalUserInfo.isNewUser
+                    const providerId = result.additionalUserInfo.providerId
+                    const operationType = result.operationType
+                    const user = result.user
+                    const credential = result.credential;
+                    const token = result.credential.accessToken;
+                    console.log(isNewUser)
+                    console.log(providerId)
+                    console.log(credential)
+                    console.log(operationType)
+                    console.log(token)
+                    console.log(user)
+                })
+                .catch(function (error) {
+                    // User couldn't sign in (bad verification code?)
+                    notice(info, error.code, error.message)
+                });
+        })
+//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+
+
+
+
 
 
         // ディスプレイネームとフォトURLの更新
@@ -782,7 +914,7 @@
          * ユーザーを削除する
          *-------------------------------------------------------------------
          */
-         get('#delete_user').addEventListener('click', event => {
+        get('#delete_user').addEventListener('click', event => {
             let deleteApproval = window.confirm('Do you delete account?');
 
             if (deleteApproval) {
@@ -1051,6 +1183,21 @@
             return result
         }
 
+        /* 
+         * function
+         * notice
+         *-------------------------------------------------------------------
+         */
+        function checkAndformatPhoneNumber(code, num) {
+            const number = num.replace(/[━.*‐.*―.*－.*\-.*ー.*\-]/gi, '')
+            const reg = /^(0[5-9]0[0-9]{8}|0[1-9][1-9][0-9]{7})$/
+
+            if (!number.match(reg)) {
+                notice(info, 'error', 'phone number done not match format!')
+                return
+            }
+            return code + number.slice(1)
+        }
         /* 
          * function
          * notice
