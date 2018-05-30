@@ -1185,6 +1185,23 @@
 
         /* 
          * function
+         * check signin result
+         *-------------------------------------------------------------------
+         */
+        function checkSigninResult(result) {
+            const resultObject = {
+                isNewUser: result.additionalUserInfo.isNewUser || null,
+                providerId: result.additionalUserInfo.providerId || null,
+                operationType: result.operationType || null,
+                credential: result.credential || null,
+                user: result.user || null,
+            }
+            console.log(`--- ${resultObject.providerId} ${resultObject.operationType} ---`)
+            console.dir(resultObject)
+        }
+
+        /* 
+         * function
          * notice
          *-------------------------------------------------------------------
          */
