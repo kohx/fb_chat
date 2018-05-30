@@ -189,9 +189,6 @@
             <button type="button" id="show_phone_sign">show phone sign</button>
         </div>
         <div class="flex">
-            <div id="recaptcha-container"></div>
-        </div>
-        <div class="flex">
             <button type="button" id="send_verify">send verify</button>
             <button type="button" id="cancel_verify">cancel verify</button>
         </div>
@@ -247,29 +244,30 @@
 
         //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
         // phone
-        let phoneObject = {
-            verifier: null,
+        let captchaObject = {
+            recaptchaVerifier: null,
             widgetId: null,
-            confirmation: null,
-            countryCode: null,
-            rawNumber: null,
-            formedNumber: null,
+            confirmationResult: null,
+            recaptchaResponse: null,
         }
 
         /* 
          * create captcha
-         * 確認コードをSMSに送る
+         * キャプチャ作成
          *-------------------------------------------------------------------
          */
         get('#show_phone_sign').addEventListener('click', event => {
-            phoneObject.verifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                'size': 'normal', // normal, invisible
+
+            // リセットキャプチャ
+            resetCaptcha(get('#show_phone_sign'))
+
+            captchaObject.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(get('#recaptcha-container'), {
+                // normal, invisible
+                'size': 'normal',
                 //  The name of your callback function, executed when the user submits a successful response.
                 // The g-recaptcha-response token is passed to your callback.
                 'callback': response => {
-                    phoneObject.countryCode = get('#country_code').value
-                    phoneObject.rawNumber = get('#phone_number').value
-                    phoneObject.formedNumber = checkAndformatPhoneNumber(phoneObject.countryCode, phoneObject.rawNumber)
+                    console.log(captchaObject)
                 },
                 // The name of your callback function, executed when the reCAPTCHA response expires and the user needs to re-verify.
                 // Response expired. Ask user to solve reCAPTCHA again.
@@ -285,10 +283,10 @@
             })
 
             // render captcha
-            phoneObject.verifier.render()
+            captchaObject.recaptchaVerifier.render()
                 .then(widgetId => {
-                    phoneObject.widgetId = widgetId;
-                    console.log(phoneObject)
+                    captchaObject.widgetId = widgetId;
+                    console.log(captchaObject)
                 });
 
         })
@@ -300,33 +298,42 @@
          */
         get('#send_verify').addEventListener('click', event => {
             // get recaptcha response
-            var recaptchaResponse = grecaptcha.getResponse(phoneObject.widgetId)
+            captchaObject.recaptchaResponse = grecaptcha.getResponse(captchaObject.widgetId)
+
+            // get input data
+            const countryCode = get('#country_code').value
+            const rawNumber = get('#phone_number').value
+            const formedNumber = checkAndformatPhoneNumber(countryCode, rawNumber)
 
             // reCAPTCHA solved, allow signInWithPhoneNumber.
-            firebase.auth().signInWithPhoneNumber(phoneObject.formedNumber, phoneObject.verifier)
+            firebase.auth().signInWithPhoneNumber(formedNumber, captchaObject.recaptchaVerifier)
                 .then(confirmationResult => {
                     // SMS sent. Prompt user to type the code from the message,
                     // then sign the user in with confirmationResult.confirm(code).
-                    phoneObject.confirmation = confirmationResult;
+                    captchaObject.confirmationResult = confirmationResult;
 
-                    // reset captcha
+                    notice(info, 'info', 'check your sms, you get verifier code!')
+
+                    // キャプチャのみ削除
                     get('#recaptcha-container').innerHTML = ''
+
+
                 })
                 .catch(error => {
 
                     // signInWithPhoneNumber の結果がエラーであった場合は、ユーザーが再試行できるように reCAPTCHA をリセットします
-                    grecaptcha.reset(phoneObject.widgetId);
+                    grecaptcha.reset(captchaObject.widgetId)
 
                     // Or, if you haven't stored the widget ID:
-                    // phoneObject.verifier.render().then(function (widgetId) {
+                    // captchaObject.recaptchaVerifier.render().then(function (widgetId) {
                     //     grecaptcha.reset(widgetId);
                     // })
                 })
         })
 
         get('#cancel_verify').addEventListener('click', event => {
-            // reset captcha
-            get('#recaptcha-container').innerHTML = ''
+            // リセットキャプチャ
+            resetCaptcha(get('#show_phone_sign'))
         })
 
         /* 
@@ -336,14 +343,40 @@
          */
         get('#phone_signin').addEventListener('click', evetnt => {
             var verificationCode = get('#code_from_sms').value;
-            phoneObject.confirmation.confirm(verificationCode)
+            alert(verificationCode)
+            alert(captchaObject)
+            captchaObject.confirmationResult.confirm(verificationCode)
                 .then(result => {
+                    // リソルト表示
                     checkSigninResult(result)
+                    // リセットキャプチャ
+                    resetCaptcha(get('#show_phone_sign'))
                 })
                 .catch(function (error) {
                     notice(info, error.code, error.message)
+                    // リセットキャプチャ
+                    resetCaptcha(get('#show_phone_sign'))
                 });
         })
+
+        function resetCaptcha(target, elementId = 'recaptcha-container') {
+            const element = get(`#${elementId}`)
+            if (element) {
+                element.parentNode.removeChild(element)
+            }
+            target.insertAdjacentHTML('afterend', `<div id="${elementId}"></div>`)
+            // or insertAdjacentElement
+
+
+            captchaObject = {
+                recaptchaVerifier: null,
+                widgetId: null,
+                confirmationResult: null,
+                recaptchaResponse: null,
+            }
+            const result = get(`#${elementId}`)
+            return result
+        }
         //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
         // ディスプレイネームとフォトURLの更新
