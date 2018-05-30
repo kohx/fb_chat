@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Sample FirebaseUI App</title>
-    <!-- <script src="https://www.gstatic.com/firebasejs/5.0.3/firebase.js"></script> -->
-    <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+    <!-- <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script> -->
 
     <style>
         #info {
@@ -182,19 +182,18 @@
 
 
         <div class="flex">
-            <input type="text" id="international_code" value="+81">
+            <input type="text" id="country_code" value="+81">
             <input type="text" id="phone_number" value="08037870000">
         </div>
         <div class="flex">
-                <button type="button" id="show_phone_sign">show phone sign</button>
+            <button type="button" id="show_phone_sign">show phone sign</button>
         </div>
         <div class="flex">
-            <div id="sign-in-button"></div>
             <div id="recaptcha-container"></div>
         </div>
         <div class="flex">
-                <button type="button" id="send_verify">send verify</button>
-                <button type="button" id="cancel_verify">cancel verify</button>
+            <button type="button" id="send_verify">send verify</button>
+            <button type="button" id="cancel_verify">cancel verify</button>
         </div>
         <div class="flex">
             <input type="text" id="code_from_sms">
@@ -246,25 +245,27 @@
 
 
 
-//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+        //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
         // phone
         let phoneObject = {
             verifier: null,
             widgetId: null,
-            code: null,
-            number: null,
+            confirmation: null,
+            countryCode: null,
+            rawNumber: null,
+            formadNumber: null,
         }
 
         get('#show_phone_sign').addEventListener('click', event => {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            phoneObject.verifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
                 'size': 'normal', // normal, invisible
                 'callback': response => {
-                    const internationalCode = get('#international_code').value
-                    const phoneNumber = get('#phone_number').value
-                    const formedNumber = checkAndformatPhoneNumber(internationalCode, phoneNumber)
-                    console.log(formedNumber)
+                    phoneObject.countryCode = get('#country_code').value
+                    phoneObject.rawNumber = get('#phone_number').value
+                    phoneObject.formadNumber = checkAndformatPhoneNumber(phoneObject.countryCode, phoneObject.rawNumber)
+                    console.log(phoneObject.formadNumber)
                     // reCAPTCHA solved, allow signInWithPhoneNumber.
-                    onSignInSubmit(formedNumber);
+                    onSignInSubmit(phoneObject.formadNumber);
                 },
                 'expired-callback': response => {
                     // Response expired. Ask user to solve reCAPTCHA again.
@@ -272,9 +273,9 @@
                 }
             })
 
-            window.recaptchaVerifier.render()
+            phoneObject.verifier.render()
                 .then(widgetId => {
-                    window.recaptchaWidgetId = widgetId;
+                    phoneObject.widgetId = widgetId;
                     console.log(widgetId)
                 });
 
@@ -282,15 +283,14 @@
 
         function onSignInSubmit(formedNumber) {
             // get recaptcha response
-            var recaptchaResponse = grecaptcha.getResponse(window.recaptchaWidgetId)
+            var recaptchaResponse = grecaptcha.getResponse(phoneObject.widgetId)
             console.log(recaptchaResponse)
-            const appVerifier = window.recaptchaVerifier;
-
+            const appVerifier = phoneObject.verifier;
             firebase.auth().signInWithPhoneNumber(formedNumber, appVerifier)
                 .then(function (confirmationResult) {
                     // SMS sent. Prompt user to type the code from the message,
                     // then sign the user in with confirmationResult.confirm(code).
-                    window.confirmationResult = confirmationResult;
+                    phoneObject.confirmation = confirmationResult;
                     console.log(confirmationResult)
                 })
                 .catch(function (error) {
@@ -299,10 +299,10 @@
                     console.log(error)
 
                     // signInWithPhoneNumber の結果がエラーであった場合は、ユーザーが再試行できるように reCAPTCHA をリセットします
-                    // grecaptcha.reset(window.recaptchaWidgetId);
+                    // grecaptcha.reset(phoneObject.widgetId);
 
                     // // Or, if you haven't stored the widget ID:
-                    // window.recaptchaVerifier.render().then(function (widgetId) {
+                    // phoneObject.verifier.render().then(function (widgetId) {
                     //     grecaptcha.reset(widgetId);
                     // })
                 })
@@ -323,36 +323,18 @@
          */
         get('#phone_signin').addEventListener('click', evetnt => {
             var verificationCode = get('#code_from_sms').value;
-            window.confirmationResult.confirm(verificationCode)
+            phoneObject.confirmation.confirm(verificationCode)
                 .then(result => {
                     // User signed in successfully.
-                    // result
-                    console.log('メールとパスワードでサインイン')
-                    console.log(result)
-                    const isNewUser = result.additionalUserInfo.isNewUser
-                    const providerId = result.additionalUserInfo.providerId
-                    const operationType = result.operationType
-                    const user = result.user
-                    const credential = result.credential;
-                    const token = result.credential.accessToken;
-                    console.log(isNewUser)
-                    console.log(providerId)
-                    console.log(credential)
-                    console.log(operationType)
-                    console.log(token)
-                    console.log(user)
+                    checkSigninResult(result)
                 })
                 .catch(function (error) {
+                    console.log(error)
                     // User couldn't sign in (bad verification code?)
                     notice(info, error.code, error.message)
                 });
         })
-//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-
-
-
-
-
+        //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
         // ディスプレイネームとフォトURLの更新
         get('#updata_dysplay_name_and_photo_url').addEventListener('click', event => {
@@ -1207,13 +1189,19 @@
          */
         function checkAndformatPhoneNumber(code, num) {
             const number = num.replace(/[━.*‐.*―.*－.*\-.*ー.*\-]/gi, '')
-            const reg = /^(0[5-9]0[0-9]{8}|0[1-9][1-9][0-9]{7})$/
-
-            if (!number.match(reg)) {
+            const numbertReg = /^(0[5-9]0[0-9]{8}|0[1-9][1-9][0-9]{7})$/
+            if (!number.match(numbertReg)) {
                 notice(info, 'error', 'phone number done not match format!')
                 return
             }
-            return code + number.slice(1)
+
+            const formadNumber = code + number.slice(1)
+            const formadReg = /^\(*\+*[1-9]{0,3}\)*-*[1-9]{0,3}[-. /]*\(*[2-9]\d{2}\)*[-. /]*\d{3}[-. /]*\d{4} *e*x*t*\.* *\d{0,4}$/
+            if (!formadNumber.match(formadReg)) {
+                notice(info, 'error', 'phone number done not match format!')
+                return
+            }
+            return formadNumber
         }
         /* 
          * function
